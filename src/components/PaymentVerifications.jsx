@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { format } from 'date-fns'
+import { format, differenceInDays } from 'date-fns'
 import { supabase } from '../supabase'
 import '../css/PaymentVerifications.css'
 
@@ -195,9 +195,29 @@ const PaymentVerifications = () => {
                                             <button className="reject-btn" onClick={() => handleVerification(payment.id, 'reject')}>✕ Reject</button>
                                         </>
                                     ) : (
-                                        <button className="receipt-btn" onClick={() => openReceiptModal(payment)}>
-                                            📄 Generate Receipt
-                                        </button>
+                                        <>
+                                            {(() => {
+                                                const daysSincePayment = differenceInDays(new Date(), new Date(payment.date))
+                                                const canGenerateReceipt = daysSincePayment <= 10
+
+                                                return canGenerateReceipt ? (
+                                                    <button className="receipt-btn" onClick={() => openReceiptModal(payment)}>
+                                                        📄 Generate Receipt
+                                                    </button>
+                                                ) : (
+                                                    <div style={{
+                                                        padding: '0.8rem',
+                                                        color: '#94a3b8',
+                                                        fontSize: '0.85rem',
+                                                        fontStyle: 'italic',
+                                                        textAlign: 'center'
+                                                    }}>
+                                                        Receipt generation expired<br />
+                                                        <span style={{ fontSize: '0.75rem' }}>({daysSincePayment} days old)</span>
+                                                    </div>
+                                                )
+                                            })()}
+                                        </>
                                     )}
                                 </div>
                             </div>
