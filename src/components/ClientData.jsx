@@ -14,6 +14,7 @@ const ClientData = () => {
   const [selectedIds, setSelectedIds] = useState([])
   const [availableUsers, setAvailableUsers] = useState([])
   const [assignToUserId, setAssignToUserId] = useState('')
+  const [bulkAssignCount, setBulkAssignCount] = useState('')
   const [isBulkAssigning, setIsBulkAssigning] = useState(false)
 
   // Admin view toggle: 'engagements' (active) vs 'master' (unassigned pool)
@@ -183,6 +184,59 @@ const ClientData = () => {
     }
   }
 
+  const handleBulkAssignByCount = async () => {
+    if (!assignToUserId) return alert("Please select a user")
+    if (!bulkAssignCount || bulkAssignCount <= 0) return alert("Please enter a valid number")
+
+    const count = parseInt(bulkAssignCount)
+    if (count > data.length) {
+      return alert(`Only ${data.length} unassigned clients available`)
+    }
+
+    try {
+      setIsBulkAssigning(true)
+
+      // Take top N clients from the current filtered/sorted data
+      const clientsToAssign = filteredAndSortedData.slice(0, count)
+
+      for (const item of clientsToAssign) {
+        // 1. Create Engagement
+        const { error: engErr } = await supabase
+          .from('engagements')
+          .insert([{
+            client_id: item.clientId,
+            user_id: assignToUserId,
+            status: 'waiting',
+            message: 'Bulk assigned from Master Pool',
+            assignment_date: format(new Date(), 'yyyy-MM-dd')
+          }])
+
+        if (engErr) {
+          throw new Error(`Assignment failed for ${item.name}: ${engErr.message}`)
+        }
+
+        // 2. Mark Client as assigned in Master Pool
+        const { error: updErr } = await supabase
+          .from('clients')
+          .update({ is_assigned: true })
+          .eq('id', item.clientId)
+
+        if (updErr) {
+          throw new Error(`Database record update failed for ${item.name}: ${updErr.message}`)
+        }
+      }
+
+      alert(`Successfully assigned ${count} clients to ${availableUsers.find(u => u.id === assignToUserId)?.username}`)
+      setBulkAssignCount('')
+      loadData()
+    } catch (error) {
+      console.error('Bulk Assignment Error:', error)
+      alert(error.message)
+    } finally {
+      setIsBulkAssigning(false)
+    }
+  }
+
   const handleAddClient = async (e) => {
     e.preventDefault()
     try {
@@ -330,20 +384,49 @@ const ClientData = () => {
       {viewMode === 'master' && (
         <div className="bulk-actions-container">
           <div className="assign-controls">
-            <label>Assign {selectedIds.length} Clients to Agent: </label>
-            <select value={assignToUserId} onChange={(e) => setAssignToUserId(e.target.value)}>
-              <option value="">Select Target...</option>
-              {availableUsers.map(u => (
-                <option key={u.id} value={u.id}>{u.username} ({u.role})</option>
-              ))}
-            </select>
-            <button
-              className="bulk-assign-btn"
-              onClick={handleBulkAssign}
-              disabled={isBulkAssigning || !assignToUserId || selectedIds.length === 0}
-            >
-              Confirm Assignment
-            </button>
+            <div className="assign-row">
+              <label>Assign {selectedIds.length} Clients to Agent: </label>
+              <select value={assignToUserId} onChange={(e) => setAssignToUserId(e.target.value)}>
+                <option value="">Select Target...</option>
+                {availableUsers.map(u => (
+                  <option key={u.id} value={u.id}>{u.username} ({u.role})</option>
+                ))}
+              </select>
+              <button
+                className="bulk-assign-btn"
+                onClick={handleBulkAssign}
+                disabled={isBulkAssigning || !assignToUserId || selectedIds.length === 0}
+              >
+                Confirm Assignment
+              </button>
+            </div>
+
+            <div className="assign-row bulk-count-row">
+              <label>Or assign top</label>
+              <input
+                type="number"
+                min="1"
+                max={data.length}
+                value={bulkAssignCount}
+                onChange={(e) => setBulkAssignCount(e.target.value)}
+                placeholder="50"
+                className="count-input"
+              />
+              <label>unassigned clients to:</label>
+              <select value={assignToUserId} onChange={(e) => setAssignToUserId(e.target.value)}>
+                <option value="">Select Target...</option>
+                {availableUsers.map(u => (
+                  <option key={u.id} value={u.id}>{u.username} ({u.role})</option>
+                ))}
+              </select>
+              <button
+                className="bulk-assign-btn"
+                onClick={handleBulkAssignByCount}
+                disabled={isBulkAssigning || !assignToUserId || !bulkAssignCount}
+              >
+                Assign Top {bulkAssignCount || 'N'}
+              </button>
+            </div>
           </div>
         </div>
       )}
