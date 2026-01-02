@@ -7,6 +7,7 @@ import '../css/IncomeSlips.css'
 const IncomeSlips = () => {
     const { user } = useAuth()
     const [selectedMonth, setSelectedMonth] = useState(format(new Date(), 'yyyy-MM'))
+    const [selectedAgentId, setSelectedAgentId] = useState('all')
     const [slipsData, setSlipsData] = useState([])
     const [loading, setLoading] = useState(false)
     const [profiles, setProfiles] = useState({})
@@ -15,11 +16,12 @@ const IncomeSlips = () => {
         fetchProfiles()
     }, [])
 
+
     useEffect(() => {
         if (Object.keys(profiles).length > 0) {
             generateSlips()
         }
-    }, [selectedMonth, profiles])
+    }, [selectedMonth, selectedAgentId, profiles])
 
     const fetchProfiles = async () => {
         try {
@@ -62,13 +64,29 @@ const IncomeSlips = () => {
                 .lte('date', end)
 
             // Role filtering
+            // Role filtering & User Selection
             if (user.role === 'manager') {
                 // Determine team members
                 const teamIds = Object.values(profiles)
                     .filter(p => p.manager_id === user.id)
                     .map(p => p.id)
                 teamIds.push(user.id) // Include self
-                query = query.in('user_id', teamIds)
+
+                if (selectedAgentId !== 'all') {
+                    if (teamIds.includes(selectedAgentId)) {
+                        query = query.eq('user_id', selectedAgentId)
+                    } else {
+                        // Manager trying to select someone not in team? Block or show empty.
+                        query = query.eq('user_id', '00000000-0000-0000-0000-000000000000')
+                    }
+                } else {
+                    query = query.in('user_id', teamIds)
+                }
+
+            } else if (user.role === 'admin') {
+                if (selectedAgentId !== 'all') {
+                    query = query.eq('user_id', selectedAgentId)
+                }
             } else if (user.role === 'user') {
                 query = query.eq('user_id', user.id)
             }
@@ -122,12 +140,30 @@ const IncomeSlips = () => {
         <div className="income-slips-container">
             <div className="slips-header">
                 <div className="title-group">
-                    <h2>Income Slips Generation</h2>
-                    <p style={{ color: '#64748b', fontSize: '0.9rem' }}>
-                        Generate official monthly income statements for agents.
-                    </p>
+                    <h2>Salary / Income Statements</h2>
                 </div>
                 <div className="controls-area">
+                    {(user.role === 'admin' || user.role === 'manager') && (
+                        <select
+                            className="agent-selector"
+                            value={selectedAgentId}
+                            onChange={(e) => setSelectedAgentId(e.target.value)}
+                        >
+                            <option value="all">All Agents</option>
+                            {Object.values(profiles)
+                                .filter(p => {
+                                    if (user.role === 'admin') return true
+                                    if (user.role === 'manager') return p.manager_id === user.id || p.id === user.id
+                                    return false
+                                })
+                                .sort((a, b) => a.username.localeCompare(b.username))
+                                .map(p => (
+                                    <option key={p.id} value={p.id}>{p.username}</option>
+                                ))
+                            }
+                        </select>
+                    )}
+
                     <input
                         type="month"
                         value={selectedMonth}
@@ -135,10 +171,10 @@ const IncomeSlips = () => {
                         className="month-selector"
                     />
                     <button className="generate-btn" onClick={generateSlips} disabled={loading}>
-                        {loading ? 'Generating...' : 'Refresh Slips'}
+                        {loading ? 'Processing...' : 'Generate Slip'}
                     </button>
-                    <button className="generate-btn" style={{ background: '#475569' }} onClick={handlePrint}>
-                        🖨️ Print All
+                    <button className="generate-btn print-btn-main" onClick={handlePrint}>
+                        🖨️ Print
                     </button>
                 </div>
             </div>
@@ -149,52 +185,81 @@ const IncomeSlips = () => {
                         No verified payments found for {format(parseISO(selectedMonth + '-01'), 'MMMM yyyy')}.
                     </div>
                 ) : (
-                    slipsData.map(slip => (
-                        <div key={slip.userId} className="slip-card">
-                            <div className="slip-header">
-                                <div className="agent-info">
-                                    <h3>{slip.userName}</h3>
-                                    <span className="role">{slip.userRole}</span>
-                                </div>
-                                <div className="slip-summary">
-                                    <span className="total-label">Total Payout ({format(parseISO(selectedMonth + '-01'), 'MMM yyyy')})</span>
-                                    <span className="total-amount">₹{slip.totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-                                </div>
-                            </div>
+                    slipsData.map(slip => {
+                        const gstAmount = slip.totalAmount * 0.18
+                        const netPayable = slip.totalAmount - gstAmount
 
-                            <div className="slip-table-container">
-                                <button className="print-btn" onClick={() => {
-                                    // Hacky way to print single div? No, easiest is just print page for now or filter views.
-                                    // For now, "Print All" is the main feature.
-                                    alert('To print a single slip, use the browser print function and select "Selection" or use "Print All" for the monthly report.')
-                                }}>Print Slip</button>
+                        return (
+                            <div key={slip.userId} className="slip-card official-slip">
+                                <div className="official-header">
+                                    <div className="company-branding">
+                                        <h1>FINTRUST</h1>
+                                        <p>Excellence in Financial Services</p>
+                                    </div>
+                                    <div className="slip-meta">
+                                        <h3>SALARY / INCOME SLIP</h3>
+                                        <div className="meta-row">
+                                            <span>Month:</span>
+                                            <strong>{format(parseISO(selectedMonth + '-01'), 'MMMM yyyy')}</strong>
+                                        </div>
+                                        <div className="meta-row">
+                                            <span>Agent Name:</span>
+                                            <strong>{slip.userName}</strong>
+                                        </div>
+                                        <div className="meta-row">
+                                            <span>Role:</span>
+                                            <strong style={{ textTransform: 'capitalize' }}>{slip.userRole}</strong>
+                                        </div>
+                                    </div>
+                                </div>
 
-                                <table className="slip-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Date</th>
-                                            <th>Account No.</th>
-                                            <th>Client Name / Mobile</th>
-                                            <th className="amount-col">Amount</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {slip.records.map((record, idx) => (
-                                            <tr key={idx}>
-                                                <td>{format(new Date(record.date), 'dd MMM yyyy')}</td>
-                                                <td>{record.account}</td>
-                                                <td>
-                                                    {record.clientName}<br />
-                                                    <span style={{ fontSize: '0.8em', color: '#94a3b8' }}>{record.clientMobile}</span>
-                                                </td>
-                                                <td className="amount-col">₹{record.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                                <div className="slip-table-container">
+                                    <table className="slip-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Particulars (Client / Mobile / Account)</th>
+                                                <th className="amount-col">Amount (INR)</th>
                                             </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                                        </thead>
+                                        <tbody>
+                                            {slip.records.map((record, idx) => (
+                                                <tr key={idx}>
+                                                    <td>{format(new Date(record.date), 'dd-MM-yyyy')}</td>
+                                                    <td>
+                                                        <div className="particulars-cell">
+                                                            <span className="client-name">{record.clientName}</span>
+                                                            <span className="details">Mobile: {record.clientMobile} | Acc: {record.account}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="amount-col">{record.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                        <tfoot>
+                                            <tr className="summary-row total-sales-row">
+                                                <td colSpan="2" className="label-cell">Total Gross Sales / Collection</td>
+                                                <td className="amount-cell">₹{slip.totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                                            </tr>
+                                            <tr className="summary-row gst-row">
+                                                <td colSpan="2" className="label-cell">Less: GST @ 18%</td>
+                                                <td className="amount-cell red-text">- ₹{gstAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                                            </tr>
+                                            <tr className="summary-row net-pay-row">
+                                                <td colSpan="2" className="label-cell">NET PAYABLE INCOME</td>
+                                                <td className="amount-cell highlight-green">₹{netPayable.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+
+                                    <div className="slip-footer">
+                                        <p>This is a computer-generated document and does not require a physical signature.</p>
+                                        <p>Fintrust Financial Services • India</p>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    ))
+                        )
+                    })
                 )}
             </div>
         </div>
