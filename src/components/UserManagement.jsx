@@ -45,7 +45,7 @@ const UserManagement = () => {
       const { data: profiles, error, count } = await supabase
         .from('profiles')
         .select('*', { count: 'exact' })
-        .order('created_at', { ascending: false })
+        .order('username', { ascending: true })
         .range(from, to)
 
       if (error) throw error
