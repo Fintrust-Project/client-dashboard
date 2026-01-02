@@ -7,7 +7,7 @@ import '../css/IncomeSlips.css'
 const IncomeSlips = () => {
     const { user } = useAuth()
     const [selectedMonth, setSelectedMonth] = useState(format(new Date(), 'yyyy-MM'))
-    const [selectedAgentId, setSelectedAgentId] = useState('all')
+    const [selectedAgentId, setSelectedAgentId] = useState('')
     const [slipsData, setSlipsData] = useState([])
     const [loading, setLoading] = useState(false)
     const [profiles, setProfiles] = useState({})
@@ -82,11 +82,13 @@ const IncomeSlips = () => {
             let targetUserIds = []
 
             if (user.role === 'admin') {
-                if (selectedAgentId !== 'all') {
-                    targetUserIds = [selectedAgentId]
-                } else {
+                if (selectedAgentId === 'all') {
                     // All users
                     targetUserIds = Object.keys(profiles)
+                } else if (selectedAgentId) {
+                    targetUserIds = [selectedAgentId]
+                } else {
+                    targetUserIds = [] // No agent selected
                 }
             } else if (user.role === 'manager') {
                 const teamIds = Object.values(profiles)
@@ -94,14 +96,16 @@ const IncomeSlips = () => {
                     .map(p => p.id)
                 teamIds.push(user.id)
 
-                if (selectedAgentId !== 'all') {
+                if (selectedAgentId === 'all') {
+                    targetUserIds = teamIds
+                } else if (selectedAgentId) {
                     if (teamIds.includes(selectedAgentId)) {
                         targetUserIds = [selectedAgentId]
                     } else {
                         targetUserIds = [] // Invalid selection
                     }
                 } else {
-                    targetUserIds = teamIds
+                    targetUserIds = [] // No agent selected
                 }
             } else {
                 targetUserIds = [user.id]
@@ -221,6 +225,7 @@ const IncomeSlips = () => {
                             value={selectedAgentId}
                             onChange={(e) => setSelectedAgentId(e.target.value)}
                         >
+                            <option value="">Select Agent...</option>
                             <option value="all">All Agents</option>
                             {Object.values(profiles)
                                 .filter(p => {
@@ -254,7 +259,7 @@ const IncomeSlips = () => {
             <div className="slips-list">
                 {slipsData.length === 0 ? (
                     <div className="no-data" style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8' }}>
-                        No verified payments found for {format(parseISO(selectedMonth + '-01'), 'MMMM yyyy')}.
+                        {selectedAgentId ? `No verified payments found for ${format(parseISO(selectedMonth + '-01'), 'MMMM yyyy')}.` : 'Please select an agent and click "Generate Slip".'}
                     </div>
                 ) : (
                     <>
