@@ -7,6 +7,9 @@ const PaymentVerifications = () => {
     const [activeTab, setActiveTab] = useState('pending') // 'pending' or 'verified'
     const [payments, setPayments] = useState([])
     const [loading, setLoading] = useState(true)
+    const [currentPage, setCurrentPage] = useState(1)
+    const [itemsPerPage] = useState(10)
+    const [totalCount, setTotalCount] = useState(0)
 
     // Receipt Modal State
     const [showReceiptModal, setShowReceiptModal] = useState(false)
@@ -22,11 +25,18 @@ const PaymentVerifications = () => {
 
     useEffect(() => {
         loadData()
+    }, [activeTab, currentPage])
+
+    useEffect(() => {
+        setCurrentPage(1)
     }, [activeTab])
 
     const loadData = async () => {
         try {
             setLoading(true)
+
+            const from = (currentPage - 1) * itemsPerPage
+            const to = from + itemsPerPage - 1
 
             // Base query with relationships
             let query = supabase
@@ -35,17 +45,19 @@ const PaymentVerifications = () => {
                     id, amount, date, user_id, client_id, account_id,
                     clients ( name, mobile, email ),
                     profiles ( username )
-                `)
+                `, { count: 'exact' })
                 .order('created_at', { ascending: false })
 
             if (activeTab === 'pending') {
                 query = query.eq('status', 'pending')
             } else {
-                query = query.eq('status', 'verified').limit(50) // Limit verified history
+                query = query.eq('status', 'verified')
             }
 
-            const { data: rawPayments, error: payErr } = await query
+            const { data: rawPayments, error: payErr, count } = await query.range(from, to)
             if (payErr) throw payErr
+
+            setTotalCount(count || 0)
 
             // Enrich with Engagement info (for status badges)
             const enrichedPayments = await Promise.all(rawPayments.map(async (p) => {
@@ -167,62 +179,93 @@ const PaymentVerifications = () => {
                         <p>No {activeTab} payments found.</p>
                     </div>
                 ) : (
-                    <div className="payment-cards">
-                        {payments.map(payment => (
-                            <div key={payment.id} className="payment-card">
-                                <div className="payment-info">
-                                    <div className="info-row">
-                                        <span className="label">Client:</span>
-                                        <span className="value">{payment.clients?.name}</span>
+                    <>
+                        <div className="payment-cards">
+                            {payments.map(payment => (
+                                <div key={payment.id} className="payment-card">
+                                    <div className="payment-info">
+                                        <div className="info-row">
+                                            <span className="label">Client:</span>
+                                            <span className="value">{payment.clients?.name}</span>
+                                        </div>
+                                        <div className="info-row">
+                                            <span className="label">Agent:</span>
+                                            <span className="value">@{payment.profiles?.username}</span>
+                                        </div>
+                                        <div className="info-row">
+                                            <span className="label">Amount:</span>
+                                            <span className="amount">₹{parseFloat(payment.amount).toFixed(2)}</span>
+                                        </div>
+                                        <div className="info-row">
+                                            <span className="label">Date:</span>
+                                            <span className="value">{format(new Date(payment.date), 'MMM dd, yyyy')}</span>
+                                        </div>
                                     </div>
-                                    <div className="info-row">
-                                        <span className="label">Agent:</span>
-                                        <span className="value">@{payment.profiles?.username}</span>
-                                    </div>
-                                    <div className="info-row">
-                                        <span className="label">Amount:</span>
-                                        <span className="amount">₹{parseFloat(payment.amount).toFixed(2)}</span>
-                                    </div>
-                                    <div className="info-row">
-                                        <span className="label">Date:</span>
-                                        <span className="value">{format(new Date(payment.date), 'MMM dd, yyyy')}</span>
-                                    </div>
-                                </div>
-                                <div className="payment-actions">
-                                    {activeTab === 'pending' ? (
-                                        <>
-                                            <button className="approve-btn" onClick={() => handleVerification(payment.id, 'approve')}>✓ Approve</button>
-                                            <button className="reject-btn" onClick={() => handleVerification(payment.id, 'reject')}>✕ Reject</button>
-                                        </>
-                                    ) : (
-                                        <>
-                                            {(() => {
-                                                const daysSincePayment = differenceInDays(new Date(), new Date(payment.date))
-                                                const canGenerateReceipt = daysSincePayment <= 10
+                                    <div className="payment-actions">
+                                        {activeTab === 'pending' ? (
+                                            <>
+                                                <button className="approve-btn" onClick={() => handleVerification(payment.id, 'approve')}>✓ Approve</button>
+                                                <button className="reject-btn" onClick={() => handleVerification(payment.id, 'reject')}>✕ Reject</button>
+                                            </>
+                                        ) : (
+                                            <>
+                                                {(() => {
+                                                    const daysSincePayment = differenceInDays(new Date(), new Date(payment.date))
+                                                    const canGenerateReceipt = daysSincePayment <= 10
 
-                                                return canGenerateReceipt ? (
-                                                    <button className="receipt-btn" onClick={() => openReceiptModal(payment)}>
-                                                        📄 Generate Receipt
-                                                    </button>
-                                                ) : (
-                                                    <div style={{
-                                                        padding: '0.8rem',
-                                                        color: '#94a3b8',
-                                                        fontSize: '0.85rem',
-                                                        fontStyle: 'italic',
-                                                        textAlign: 'center'
-                                                    }}>
-                                                        Receipt generation expired<br />
-                                                        <span style={{ fontSize: '0.75rem' }}>({daysSincePayment} days old)</span>
-                                                    </div>
-                                                )
-                                            })()}
-                                        </>
-                                    )}
+                                                    return canGenerateReceipt ? (
+                                                        <button className="receipt-btn" onClick={() => openReceiptModal(payment)}>
+                                                            📄 Generate Receipt
+                                                        </button>
+                                                    ) : (
+                                                        <div style={{
+                                                            padding: '0.8rem',
+                                                            color: '#94a3b8',
+                                                            fontSize: '0.85rem',
+                                                            fontStyle: 'italic',
+                                                            textAlign: 'center'
+                                                        }}>
+                                                            Receipt generation expired<br />
+                                                            <span style={{ fontSize: '0.75rem' }}>({daysSincePayment} days old)</span>
+                                                        </div>
+                                                    )
+                                                })()}
+                                            </>
+                                        )}
+                                    </div>
                                 </div>
+                            ))}
+                        </div>
+
+                        {/* Pagination Footer */}
+                        <div className="pagination-footer" style={{ marginTop: '2rem', padding: '1rem', background: 'white', borderRadius: '12px', border: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div className="pagination-info" style={{ fontSize: '0.9rem', color: '#64748b' }}>
+                                Showing <span>{(currentPage - 1) * itemsPerPage + 1}</span> to <span>{Math.min(currentPage * itemsPerPage, totalCount)}</span> of <span>{totalCount}</span> entries
                             </div>
-                        ))}
-                    </div>
+
+                            <div className="pagination-controls" style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                                <button
+                                    disabled={currentPage === 1 || loading}
+                                    onClick={() => setCurrentPage(prev => prev - 1)}
+                                    style={{ padding: '0.5rem 1rem', background: 'white', border: '1px solid #cbd5e1', borderRadius: '8px', cursor: currentPage === 1 ? 'not-allowed' : 'pointer', opacity: currentPage === 1 ? 0.5 : 1 }}
+                                >
+                                    Previous
+                                </button>
+
+                                <div className="page-numbers" style={{ fontWeight: '600', color: '#1e293b' }}>
+                                    Page {currentPage} of {Math.ceil(totalCount / itemsPerPage) || 1}
+                                </div>
+
+                                <button
+                                    disabled={currentPage >= Math.ceil(totalCount / itemsPerPage) || loading}
+                                    onClick={() => setCurrentPage(prev => prev + 1)}
+                                    style={{ padding: '0.5rem 1rem', background: 'white', border: '1px solid #cbd5e1', borderRadius: '8px', cursor: currentPage >= Math.ceil(totalCount / itemsPerPage) ? 'not-allowed' : 'pointer', opacity: currentPage >= Math.ceil(totalCount / itemsPerPage) ? 0.5 : 1 }}
+                                >
+                                    Next
+                                </button>
+                            </div>
+                        </div>
+                    </>
                 )}
             </div>
 

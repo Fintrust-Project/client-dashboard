@@ -50,10 +50,7 @@ const ClientData = () => {
       loadData()
       if (user.role === 'admin') loadUsers()
     }
-    // Reset view state when switching modes
-    setCurrentPage(1)
-    setSelectedIds([])
-  }, [user, viewMode])
+  }, [user, viewMode, currentPage, itemsPerPage, filterStatus, filterSegment, sortConfig])
 
   const loadUsers = async () => {
     try {
@@ -68,26 +65,45 @@ const ClientData = () => {
     }
   }
 
+
   const loadData = async () => {
     try {
       setLoading(true)
       setSelectedIds([])
 
+      // Calculate range for backend pagination
+      const from = (currentPage - 1) * itemsPerPage
+      const to = from + itemsPerPage - 1
+
       if (viewMode === 'engagements' || user.role !== 'admin') {
         // Load assigned engagements (normal dashboard view)
-        const query = supabase
+        let query = supabase
           .from('engagements')
           .select(`
             id, status, message, assignment_date, updated_at, segment, state, fund_amount,
             clients ( id, name, mobile, email ),
             profiles ( id, username )
-          `)
+          `, { count: 'exact' })
 
         if (user.role !== 'admin') {
-          query.eq('user_id', user.id)
+          query = query.eq('user_id', user.id)
         }
 
-        const { data: res, error } = await query.order('updated_at', { ascending: false })
+        // Apply filters before pagination
+        if (filterStatus !== 'all') {
+          query = query.eq('status', filterStatus)
+        }
+        if (filterSegment !== 'all') {
+          query = query.eq('segment', filterSegment)
+        }
+
+        // Apply sorting and pagination
+        const { data: res, error, count } = await query
+          .order(sortConfig.key === 'date' ? 'assignment_date' : sortConfig.key, {
+            ascending: sortConfig.direction === 'asc'
+          })
+          .range(from, to)
+
         if (error) throw error
 
         setData(res.map(item => ({
@@ -105,17 +121,23 @@ const ClientData = () => {
           segment: item.segment,
           state: item.state,
           fund_amount: item.fund_amount,
-          type: 'engagement'
+          type: 'engagement',
+          totalCount: count
         })))
       } else {
         // Load Master Pool (Unassigned Clients) - Admin only
-        const { data: res, error } = await supabase
+        let query = supabase
           .from('clients')
-          .select('*')
+          .select('*', { count: 'exact' })
           .eq('is_assigned', false)
-          .order('created_at', { ascending: false })
+
+        // Apply sorting and pagination
+        const { data: res, error, count } = await query
+          .order('created_at', { ascending: sortConfig.direction === 'asc' })
+          .range(from, to)
 
         if (error) throw error
+
         setData(res.map(item => ({
           id: item.id,
           clientId: item.id,
@@ -127,7 +149,8 @@ const ClientData = () => {
           message: '-',
           agent: '-',
           updatedAt: item.updated_at,
-          type: 'master'
+          type: 'master',
+          totalCount: count
         })))
       }
     } catch (error) {
@@ -320,34 +343,18 @@ const ClientData = () => {
   }
 
   const processedData = useMemo(() => {
-    let result = [...data]
+    // Backend now handles filtering, sorting, and pagination
+    // Just return data as-is
+    return data
+  }, [data])
 
-    // Filtering
-    if (filterStatus !== 'all') {
-      result = result.filter(item => item.status === filterStatus)
-    }
-    if (filterSegment !== 'all') {
-      result = result.filter(item => item.segment === filterSegment)
-    }
+  // Get total count from first item (all items have same totalCount)
+  const totalCount = data.length > 0 ? data[0].totalCount : 0
+  const totalPages = Math.ceil(totalCount / itemsPerPage)
+  const currentItems = data // Backend already returns only current page items
 
-    // Sorting
-    result.sort((a, b) => {
-      let valA = a[sortConfig.key] || ''
-      let valB = b[sortConfig.key] || ''
-
-      if (typeof valA === 'string') valA = valA.toLowerCase()
-      if (typeof valB === 'string') valB = valB.toLowerCase()
-
-      if (valA < valB) return sortConfig.direction === 'asc' ? -1 : 1
-      if (valA > valB) return sortConfig.direction === 'asc' ? 1 : -1
-      return 0
-    })
-
-    return result
-  }, [data, filterStatus, filterSegment, sortConfig])
-
-  const currentItems = processedData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
-  const totalPages = Math.ceil(processedData.length / itemsPerPage)
+  // For bulk assignment by count, we need all filtered data
+  const filteredAndSortedData = data
 
   return (
     <div className="client-data-container">
@@ -645,7 +652,7 @@ const ClientData = () => {
       {/* Pagination Footer */}
       <div className="pagination-footer">
         <div className="pagination-info">
-          Showing <span>{(currentPage - 1) * itemsPerPage + 1}</span> to <span>{Math.min(currentPage * itemsPerPage, processedData.length)}</span> of <span>{processedData.length}</span> clients
+          Showing <span>{(currentPage - 1) * itemsPerPage + 1}</span> to <span>{Math.min(currentPage * itemsPerPage, totalCount)}</span> of <span>{totalCount}</span> clients
         </div>
 
         <div className="pagination-controls">

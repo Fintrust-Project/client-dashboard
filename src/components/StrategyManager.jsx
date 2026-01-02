@@ -11,6 +11,7 @@ const StrategyManager = () => {
     const [showAddForm, setShowAddForm] = useState(false)
     const [currentPage, setCurrentPage] = useState(1)
     const [itemsPerPage] = useState(10)
+    const [totalCount, setTotalCount] = useState(0)
     const [formData, setFormData] = useState({
         message: '',
         scope: user?.role === 'admin' ? 'company' : 'team'
@@ -18,14 +19,17 @@ const StrategyManager = () => {
 
     useEffect(() => {
         if (user) loadStrategies()
-    }, [user])
+    }, [user, currentPage])
 
     const loadStrategies = async () => {
         try {
             setLoading(true)
+            const from = (currentPage - 1) * itemsPerPage
+            const to = from + itemsPerPage - 1
+
             let query = supabase
                 .from('strategies')
-                .select('*, profiles!author_id(username)')
+                .select('*, profiles!author_id(username)', { count: 'exact' })
                 .order('created_at', { ascending: false })
 
             if (user.role === 'manager') {
@@ -34,9 +38,11 @@ const StrategyManager = () => {
                 query = query.eq('scope', 'company')
             }
 
-            const { data, error } = await query
+            const { data, error, count } = await query.range(from, to)
             if (error) throw error
+
             setStrategies(data || [])
+            setTotalCount(count || 0)
         } catch (error) {
             console.error('Error loading strategies:', error.message)
         } finally {
@@ -93,11 +99,9 @@ const StrategyManager = () => {
         )
     }
 
-    // Pagination logic
-    const indexOfLastItem = currentPage * itemsPerPage
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage
-    const currentStrategies = strategies.slice(indexOfFirstItem, indexOfLastItem)
-    const totalPages = Math.ceil(strategies.length / itemsPerPage)
+    // Pagination variables (backend handled)
+    const currentStrategies = strategies
+    const totalPages = Math.ceil(totalCount / itemsPerPage)
 
     return (
         <div className="strategy-manager-container">

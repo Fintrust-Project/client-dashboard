@@ -11,6 +11,8 @@ const IncomeSlips = () => {
     const [slipsData, setSlipsData] = useState([])
     const [loading, setLoading] = useState(false)
     const [profiles, setProfiles] = useState({})
+    const [currentPage, setCurrentPage] = useState(1)
+    const [itemsPerPage] = useState(5) // Slips are large, show fewer per page
 
     useEffect(() => {
         fetchProfiles()
@@ -19,6 +21,7 @@ const IncomeSlips = () => {
 
     useEffect(() => {
         if (Object.keys(profiles).length > 0) {
+            setCurrentPage(1)
             generateSlips()
         }
     }, [selectedMonth, selectedAgentId, profiles])
@@ -254,96 +257,129 @@ const IncomeSlips = () => {
                         No verified payments found for {format(parseISO(selectedMonth + '-01'), 'MMMM yyyy')}.
                     </div>
                 ) : (
-                    slipsData.map(slip => {
-                        const gstAmount = slip.totalAmount * 0.18
-                        const netPayable = slip.totalAmount - gstAmount
+                    <>
+                        {slipsData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map(slip => {
+                            const gstAmount = slip.totalAmount * 0.18
+                            const netPayable = slip.totalAmount - gstAmount
 
-                        return (
-                            <div key={slip.userId} className="slip-card official-slip">
-                                <div className="official-header">
-                                    <div className="company-branding">
-                                        <h1>FINTRUST</h1>
-                                        <p>Excellence in Financial Services</p>
+                            return (
+                                <div key={slip.userId} className="slip-card official-slip">
+                                    <div className="official-header">
+                                        <div className="company-branding">
+                                            <h1>FINTRUST</h1>
+                                            <p>Excellence in Financial Services</p>
+                                        </div>
+                                        <div className="slip-meta">
+                                            <h3>SALARY / INCOME SLIP</h3>
+                                            <div className="meta-row">
+                                                <span>Month:</span>
+                                                <strong>{format(parseISO(selectedMonth + '-01'), 'MMMM yyyy')}</strong>
+                                            </div>
+                                            <div className="meta-row">
+                                                <span>Agent Name:</span>
+                                                <strong>{slip.userName}</strong>
+                                            </div>
+                                            <div className="meta-row">
+                                                <span>Role:</span>
+                                                <strong style={{ textTransform: 'capitalize' }}>{slip.userRole}</strong>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div className="slip-meta">
-                                        <h3>SALARY / INCOME SLIP</h3>
-                                        <div className="meta-row">
-                                            <span>Month:</span>
-                                            <strong>{format(parseISO(selectedMonth + '-01'), 'MMMM yyyy')}</strong>
-                                        </div>
-                                        <div className="meta-row">
-                                            <span>Agent Name:</span>
-                                            <strong>{slip.userName}</strong>
-                                        </div>
-                                        <div className="meta-row">
-                                            <span>Role:</span>
-                                            <strong style={{ textTransform: 'capitalize' }}>{slip.userRole}</strong>
+
+                                    <div className="slip-table-container">
+                                        <table className="slip-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Date</th>
+                                                    <th>Particulars (Client / Mobile / Account)</th>
+                                                    <th className="amount-col">Full Amount</th>
+                                                    <th className="amount-col">Your Share</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {slip.records.map((record, idx) => (
+                                                    <tr key={idx}>
+                                                        <td>{format(new Date(record.date), 'dd-MM-yyyy')}</td>
+                                                        <td>
+                                                            <div className="particulars-cell">
+                                                                <span className="client-name">{record.clientName}</span>
+                                                                <span className="details">Mobile: {record.clientMobile} | Acc: {record.account}</span>
+                                                            </div>
+                                                        </td>
+                                                        <td className="amount-col">
+                                                            {record.fullAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                                                        </td>
+                                                        <td className="amount-col">
+                                                            {record.hasSplit && record.splitPercentage < 100 ? (
+                                                                <>
+                                                                    <div style={{ fontSize: '0.85em', color: '#3b82f6', fontWeight: '600' }}>
+                                                                        {record.splitPercentage.toFixed(1)}%
+                                                                    </div>
+                                                                    <div>{record.actualAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</div>
+                                                                </>
+                                                            ) : (
+                                                                <div>{record.actualAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</div>
+                                                            )}
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                            <tfoot>
+                                                <tr className="summary-row total-sales-row">
+                                                    <td colSpan="3" className="label-cell">Total Gross Sales / Collection</td>
+                                                    <td className="amount-cell">₹{slip.totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                                                </tr>
+                                                <tr className="summary-row gst-row">
+                                                    <td colSpan="3" className="label-cell">Less: GST @ 18%</td>
+                                                    <td className="amount-cell red-text">- ₹{gstAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                                                </tr>
+                                                <tr className="summary-row net-pay-row">
+                                                    <td colSpan="3" className="label-cell">NET PAYABLE INCOME</td>
+                                                    <td className="amount-cell highlight-green">₹{netPayable.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                                                </tr>
+                                            </tfoot>
+                                        </table>
+
+                                        <div className="slip-footer-disclaimer">
+                                            <p>* This is an electronically generated document. No signature is required.</p>
+                                            <p>* All payments are subject to standard verification protocols.</p>
                                         </div>
                                     </div>
                                 </div>
+                            )
+                        })}
 
-                                <div className="slip-table-container">
-                                    <table className="slip-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Date</th>
-                                                <th>Particulars (Client / Mobile / Account)</th>
-                                                <th className="amount-col">Full Amount</th>
-                                                <th className="amount-col">Your Share</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {slip.records.map((record, idx) => (
-                                                <tr key={idx}>
-                                                    <td>{format(new Date(record.date), 'dd-MM-yyyy')}</td>
-                                                    <td>
-                                                        <div className="particulars-cell">
-                                                            <span className="client-name">{record.clientName}</span>
-                                                            <span className="details">Mobile: {record.clientMobile} | Acc: {record.account}</span>
-                                                        </div>
-                                                    </td>
-                                                    <td className="amount-col">
-                                                        {record.fullAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                                                    </td>
-                                                    <td className="amount-col">
-                                                        {record.hasSplit && record.splitPercentage < 100 ? (
-                                                            <>
-                                                                <div style={{ fontSize: '0.85em', color: '#3b82f6', fontWeight: '600' }}>
-                                                                    {record.splitPercentage.toFixed(1)}%
-                                                                </div>
-                                                                <div>{record.actualAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</div>
-                                                            </>
-                                                        ) : (
-                                                            <div>{record.actualAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</div>
-                                                        )}
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                        <tfoot>
-                                            <tr className="summary-row total-sales-row">
-                                                <td colSpan="3" className="label-cell">Total Gross Sales / Collection</td>
-                                                <td className="amount-cell">₹{slip.totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                                            </tr>
-                                            <tr className="summary-row gst-row">
-                                                <td colSpan="3" className="label-cell">Less: GST @ 18%</td>
-                                                <td className="amount-cell red-text">- ₹{gstAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                                            </tr>
-                                            <tr className="summary-row net-pay-row">
-                                                <td colSpan="3" className="label-cell">NET PAYABLE INCOME</td>
-                                                <td className="amount-cell highlight-green">₹{netPayable.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                                            </tr>
-                                        </tfoot>
-                                    </table>
+                        {/* Pagination Footer */}
+                        {slipsData.length > itemsPerPage && (
+                            <div className="pagination-footer" style={{ marginTop: '2rem', padding: '1rem', background: 'white', borderRadius: '12px', border: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
+                                <div className="pagination-info" style={{ fontSize: '0.9rem', color: '#64748b' }}>
+                                    Showing slips <span>{(currentPage - 1) * itemsPerPage + 1}</span> to <span>{Math.min(currentPage * itemsPerPage, slipsData.length)}</span> of <span>{slipsData.length}</span>
+                                </div>
 
-                                    <div className="slip-footer">
-                                        <p>This is a computer-generated document and does not require a physical signature.</p>
-                                        <p>Fintrust Financial Services • India</p>
+                                <div className="pagination-controls" style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                                    <button
+                                        disabled={currentPage === 1 || loading}
+                                        onClick={() => setCurrentPage(prev => prev - 1)}
+                                        style={{ padding: '0.5rem 1rem', background: 'white', border: '1px solid #cbd5e1', borderRadius: '8px', cursor: currentPage === 1 ? 'not-allowed' : 'pointer', opacity: currentPage === 1 ? 0.5 : 1, fontWeight: '600' }}
+                                    >
+                                        Previous
+                                    </button>
+
+                                    <div className="page-numbers" style={{ fontWeight: '600', color: '#1e293b' }}>
+                                        Page {currentPage} of {Math.ceil(slipsData.length / itemsPerPage)}
                                     </div>
+
+                                    <button
+                                        disabled={currentPage >= Math.ceil(slipsData.length / itemsPerPage) || loading}
+                                        onClick={() => setCurrentPage(prev => prev + 1)}
+                                        style={{ padding: '0.5rem 1rem', background: 'white', border: '1px solid #cbd5e1', borderRadius: '8px', cursor: currentPage >= Math.ceil(slipsData.length / itemsPerPage) ? 'not-allowed' : 'pointer', opacity: currentPage >= Math.ceil(slipsData.length / itemsPerPage) ? 0.5 : 1, fontWeight: '600' }}
+                                    >
+                                        Next
+                                    </button>
                                 </div>
                             </div>
-                        )
-                    })
+                        )}
+                    </>
                 )}
             </div>
         </div>

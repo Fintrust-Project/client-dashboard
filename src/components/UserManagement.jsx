@@ -10,6 +10,10 @@ const UserManagement = () => {
   const [showAddForm, setShowAddForm] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [editingId, setEditingId] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage] = useState(10)
+  const [totalCount, setTotalCount] = useState(0)
 
   const [formData, setFormData] = useState({
     email: '',
@@ -21,31 +25,50 @@ const UserManagement = () => {
 
   useEffect(() => {
     loadUsers()
-  }, [])
+    loadManagers() // Managers list needed for dropdowns
+  }, [currentPage])
+
+  const loadManagers = async () => {
+    try {
+      const { data } = await supabase.from('profiles').select('id, username').eq('role', 'manager')
+      setManagers(data || [])
+    } catch (err) { }
+  }
 
   const loadUsers = async () => {
     try {
-      // Fetch all profiles
-      const { data: profiles, error } = await supabase
+      setLoading(true)
+      const from = (currentPage - 1) * itemsPerPage
+      const to = from + itemsPerPage - 1
+
+      // Fetch profiles with pagination
+      const { data: profiles, error, count } = await supabase
         .from('profiles')
-        .select('*')
+        .select('*', { count: 'exact' })
+        .order('created_at', { ascending: false })
+        .range(from, to)
 
       if (error) throw error
 
-      // Enrich with manager names (client-side join for simplicity)
+      setTotalCount(count || 0)
+
+      // Fetch all managers to resolve names
+      const { data: allManagers } = await supabase.from('profiles').select('id, username').eq('role', 'manager')
+
       const enrichedUsers = profiles.map(u => {
         let managerName = '-'
         if (u.manager_id) {
-          const manager = profiles.find(p => p.id === u.manager_id)
-          managerName = manager?.username || 'Unknown'
+          const m = allManagers?.find(p => p.id === u.manager_id)
+          managerName = m?.username || 'Unknown'
         }
         return { ...u, managerName }
       })
 
       setUsers(enrichedUsers)
-      setManagers(enrichedUsers.filter(u => u.role === 'manager'))
     } catch (error) {
       console.error('Error loading users:', error.message)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -289,6 +312,35 @@ const UserManagement = () => {
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* Pagination Footer */}
+      <div className="pagination-footer" style={{ marginTop: '2rem', padding: '1rem', background: 'white', borderRadius: '12px', border: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div className="pagination-info" style={{ fontSize: '0.9rem', color: '#64748b' }}>
+          Showing <span>{(currentPage - 1) * itemsPerPage + 1}</span> to <span>{Math.min(currentPage * itemsPerPage, totalCount)}</span> of <span>{totalCount}</span> users
+        </div>
+
+        <div className="pagination-controls" style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+          <button
+            disabled={currentPage === 1 || loading}
+            onClick={() => setCurrentPage(prev => prev - 1)}
+            style={{ padding: '0.5rem 1rem', background: 'white', border: '1px solid #cbd5e1', borderRadius: '8px', cursor: currentPage === 1 ? 'not-allowed' : 'pointer', opacity: currentPage === 1 ? 0.5 : 1 }}
+          >
+            Previous
+          </button>
+
+          <div className="page-numbers" style={{ fontWeight: '600', color: '#1e293b' }}>
+            Page {currentPage} of {Math.ceil(totalCount / itemsPerPage) || 1}
+          </div>
+
+          <button
+            disabled={currentPage >= Math.ceil(totalCount / itemsPerPage) || loading}
+            onClick={() => setCurrentPage(prev => prev + 1)}
+            style={{ padding: '0.5rem 1rem', background: 'white', border: '1px solid #cbd5e1', borderRadius: '8px', cursor: currentPage >= Math.ceil(totalCount / itemsPerPage) ? 'not-allowed' : 'pointer', opacity: currentPage >= Math.ceil(totalCount / itemsPerPage) ? 0.5 : 1 }}
+          >
+            Next
+          </button>
+        </div>
       </div>
     </div>
   )
