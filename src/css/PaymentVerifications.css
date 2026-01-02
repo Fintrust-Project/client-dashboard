@@ -1,8 +1,10 @@
+/* Payment Verifications Container */
 .verifications-container {
     background: white;
     border-radius: 12px;
     padding: 2rem;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    min-height: 80vh;
 }
 
 .verifications-header {
@@ -10,60 +12,154 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 2rem;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 1rem;
 }
 
 .verifications-header h2 {
-    color: #333;
     font-size: 1.5rem;
-    font-weight: 600;
+    color: #1e293b;
+    margin: 0;
 }
 
-.refresh-btn {
-    padding: 0.5rem 1rem;
-    background-color: #f8f9fa;
-    border: 1px solid #ddd;
+.header-controls {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+/* Tabs */
+.tabs {
+    display: flex;
+    gap: 0.5rem;
+    background: #f1f5f9;
+    padding: 4px;
+    border-radius: 8px;
+}
+
+.tab-btn {
+    padding: 8px 16px;
+    border: none;
+    background: transparent;
+    color: #64748b;
+    font-weight: 500;
     border-radius: 6px;
     cursor: pointer;
     transition: all 0.2s;
 }
 
-.refresh-btn:hover {
-    background-color: #e2e6ea;
+.tab-btn.active {
+    background: white;
+    color: #3b82f6;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
+.refresh-btn {
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    color: #475569;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.refresh-btn:hover {
+    background: #f1f5f9;
+    border-color: #94a3b8;
+}
+
+/* Payment Cards */
 .payment-cards {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
     gap: 1.5rem;
 }
 
 .payment-card {
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
     padding: 1.5rem;
-    transition: box-shadow 0.2s;
+    background: white;
+    transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .payment-card:hover {
+    transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .info-row {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.8rem;
     font-size: 0.95rem;
 }
 
-.info-row .label {
-    color: #666;
+.message-row {
+    flex-direction: column;
+    gap: 4px;
+    background: #fffbeb;
+    padding: 0.8rem;
+    border-radius: 8px;
+    margin-top: 1rem;
+}
+
+.label {
+    color: #64748b;
     font-weight: 500;
 }
 
-.info-row .amount {
-    color: #28a745;
+.value {
+    color: #1e293b;
+    font-weight: 600;
+    text-align: right;
+}
+
+.amount {
+    color: #16a34a;
     font-weight: 700;
     font-size: 1.1rem;
+}
+
+.status-badge {
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    text-transform: capitalize;
+}
+
+.status-waiting {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.status-contacted {
+    background: #dbeafe;
+    color: #2563eb;
+}
+
+.status-interested {
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+.status-closed {
+    background: #166534;
+    color: white;
+}
+
+.status-rejected {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.message-text {
+    font-size: 0.9rem;
+    color: #4b5563;
+    margin: 0;
+    line-height: 1.4;
 }
 
 .payment-actions {
@@ -71,39 +167,246 @@
     gap: 1rem;
     margin-top: 1.5rem;
     padding-top: 1rem;
-    border-top: 1px solid #eee;
+    border-top: 1px dashed #e2e8f0;
 }
 
 .approve-btn,
-.reject-btn {
+.reject-btn,
+.receipt-btn {
     flex: 1;
-    padding: 0.5rem;
+    padding: 0.8rem;
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     font-weight: 600;
     cursor: pointer;
-    transition: opacity 0.2s;
+    transition: filter 0.2s;
 }
 
 .approve-btn {
-    background-color: #d4edda;
-    color: #155724;
+    background: #dcfce7;
+    color: #166534;
 }
 
 .reject-btn {
-    background-color: #f8d7da;
-    color: #721c24;
+    background: #fee2e2;
+    color: #991b1b;
 }
 
-.approve-btn:hover,
+.receipt-btn {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+/* Blue for receipt */
+
+.approve-btn:hover {
+    filter: brightness(0.95);
+}
+
 .reject-btn:hover {
-    opacity: 0.8;
+    filter: brightness(0.95);
 }
 
-.no-verifications {
-    text-align: center;
-    padding: 3rem;
-    color: #999;
-    background: #f9f9f9;
+.receipt-btn:hover {
+    filter: brightness(0.95);
+}
+
+
+/* Modal Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+}
+
+.modal-content {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    position: relative;
+}
+
+.modal-content h3 {
+    margin-top: 0;
+    color: #1e293b;
+    font-size: 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.modal-form .form-group {
+    margin-bottom: 1.2rem;
+}
+
+.modal-form label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #475569;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.modal-form input,
+.modal-form select {
+    width: 100%;
+    padding: 0.8rem;
+    border: 1px solid #cbd5e1;
     border-radius: 8px;
+    font-size: 1rem;
+    color: #1e293b;
+}
+
+.modal-form input:focus {
+    border-color: #3b82f6;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.modal-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.modal-actions button {
+    flex: 1;
+    padding: 0.8rem;
+    border-radius: 8px;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-cancel {
+    background: #f1f5f9;
+    color: #64748b;
+}
+
+.btn-submit {
+    background: #3b82f6;
+    color: white;
+}
+
+
+/* Receipt Print Styles */
+.receipt-preview {
+    display: none;
+    /* Hidden by default, shown when printing or in modal preview?? -> Actually we usually specific print styles */
+}
+
+@media print {
+    body * {
+        visibility: hidden;
+    }
+
+    /* If receipt modal is open, we print IT */
+    .modal-overlay,
+    .modal-overlay * {
+        visibility: hidden;
+    }
+
+    /* We need a specific container for the printable receipt */
+    #printable-receipt,
+    #printable-receipt * {
+        visibility: visible;
+    }
+
+    #printable-receipt {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: white;
+        padding: 40px;
+        z-index: 9999;
+    }
+}
+
+/* Receipt Design (Visible inside modal or separate view) */
+.receipt-layout {
+    border: 2px solid #1e293b;
+    padding: 2rem;
+    font-family: 'Inter', sans-serif;
+}
+
+.receipt-header {
+    text-align: center;
+    border-bottom: 2px solid #1e293b;
+    padding-bottom: 1rem;
+    margin-bottom: 2rem;
+}
+
+.receipt-header h1 {
+    font-size: 2.5rem;
+    margin: 0;
+    color: #1e293b;
+    letter-spacing: 2px;
+}
+
+.receipt-header p {
+    color: #64748b;
+    margin: 5px 0 0;
+}
+
+.receipt-body {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.receipt-row {
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px dotted #cbd5e1;
+    padding-bottom: 0.5rem;
+}
+
+.receipt-label {
+    font-weight: 600;
+    color: #64748b;
+}
+
+.receipt-value {
+    font-weight: 600;
+    color: #1e293b;
+    text-align: right;
+}
+
+.receipt-table {
+    width: 100%;
+    margin-top: 2rem;
+    border-collapse: collapse;
+}
+
+.receipt-table th,
+.receipt-table td {
+    border: 1px solid #1e293b;
+    padding: 12px;
+}
+
+.receipt-table th {
+    background: #f1f5f9;
+    text-align: left;
+}
+
+.receipt-table .amount-right {
+    text-align: right;
+}
+
+.receipt-footer {
+    margin-top: 3rem;
+    text-align: center;
+    font-size: 0.8rem;
+    color: #94a3b8;
 }
