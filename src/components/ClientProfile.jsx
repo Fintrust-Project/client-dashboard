@@ -15,9 +15,13 @@ const ClientProfile = ({ client, onClose }) => {
     date: format(new Date(), 'yyyy-MM-dd'),
     accountId: ''
   })
+  const [splits, setSplits] = useState([]) // { user_id, username, percentage }
+  const [availableUsers, setAvailableUsers] = useState([])
+  const [showSplitUI, setShowSplitUI] = useState(false)
 
   useEffect(() => {
     fetchPaymentHistory()
+    fetchAvailableUsers()
   }, [client.clientId])
 
   const fetchPaymentHistory = async () => {
@@ -38,10 +42,35 @@ const ClientProfile = ({ client, onClose }) => {
     }
   }
 
+  const fetchAvailableUsers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, username, role')
+        .order('username')
+
+      if (error) throw error
+      setAvailableUsers(data || [])
+    } catch (error) {
+      console.error('Error fetching users:', error)
+    }
+  }
+
   const handleAddPayment = async (e) => {
     e.preventDefault()
+
+    // Validate splits if enabled
+    if (showSplitUI && splits.length > 0) {
+      const totalPercentage = splits.reduce((sum, s) => sum + parseFloat(s.percentage || 0), 0)
+      if (totalPercentage > 100) {
+        alert('Total split percentage cannot exceed 100%')
+        return
+      }
+    }
+
     try {
-      const { error } = await supabase
+      // 1. Insert the main payment
+      const { data: paymentData, error: paymentError } = await supabase
         .from('payments')
         .insert([{
           client_id: client.clientId,
@@ -51,11 +80,33 @@ const ClientProfile = ({ client, onClose }) => {
           account_id: newPayment.accountId,
           status: user.role === 'admin' ? 'verified' : 'pending'
         }])
+        .select()
 
-      if (error) throw error
+      if (paymentError) throw paymentError
+      const paymentId = paymentData[0].id
+
+      // 2. Insert splits if any
+      if (showSplitUI && splits.length > 0) {
+        const totalAmount = parseFloat(newPayment.amount)
+        const splitRecords = splits.map(split => ({
+          payment_id: paymentId,
+          user_id: split.user_id,
+          percentage: parseFloat(split.percentage),
+          amount: (totalAmount * parseFloat(split.percentage)) / 100
+        }))
+
+        const { error: splitError } = await supabase
+          .from('payment_splits')
+          .insert(splitRecords)
+
+        if (splitError) throw splitError
+      }
 
       setNewPayment({ amount: '', date: format(new Date(), 'yyyy-MM-dd'), accountId: '' })
+      setSplits([])
+      setShowSplitUI(false)
       fetchPaymentHistory()
+
       if (user.role !== 'admin') {
         alert('Payment request sent for admin approval.')
       } else {
@@ -64,6 +115,30 @@ const ClientProfile = ({ client, onClose }) => {
     } catch (error) {
       alert('Error: ' + error.message)
     }
+  }
+
+  const addSplit = () => {
+    setSplits([...splits, { user_id: '', username: '', percentage: '' }])
+  }
+
+  const removeSplit = (index) => {
+    setSplits(splits.filter((_, i) => i !== index))
+  }
+
+  const updateSplit = (index, field, value) => {
+    const updated = [...splits]
+    if (field === 'user_id') {
+      const selectedUser = availableUsers.find(u => u.id === value)
+      updated[index] = { ...updated[index], user_id: value, username: selectedUser?.username || '' }
+    } else {
+      updated[index] = { ...updated[index], [field]: value }
+    }
+    setSplits(updated)
+  }
+
+  const getRemainingPercentage = () => {
+    const total = splits.reduce((sum, s) => sum + parseFloat(s.percentage || 0), 0)
+    return Math.max(0, 100 - total)
   }
 
   const handleEditToggle = () => {
@@ -281,8 +356,79 @@ const ClientProfile = ({ client, onClose }) => {
                 <div className="form-group">
                   <input type="date" value={newPayment.date} onChange={(e) => setNewPayment({ ...newPayment, date: e.target.value })} required />
                 </div>
-                <button type="submit" className="add-payment-button">Add</button>
               </div>
+
+              {/* Split Commission Toggle */}
+              <div className="split-toggle-section">
+                <label className="split-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={showSplitUI}
+                    onChange={(e) => {
+                      setShowSplitUI(e.target.checked)
+                      if (!e.target.checked) setSplits([])
+                    }}
+                  />
+                  <span>Split commission with other team members</span>
+                </label>
+              </div>
+
+              {/* Splits UI */}
+              {showSplitUI && (
+                <div className="splits-container">
+                  <div className="splits-header">
+                    <h5>Commission Distribution</h5>
+                    <span className="remaining-percentage">
+                      Remaining for you: {getRemainingPercentage().toFixed(1)}%
+                    </span>
+                  </div>
+
+                  {splits.map((split, index) => (
+                    <div key={index} className="split-row">
+                      <select
+                        value={split.user_id}
+                        onChange={(e) => updateSplit(index, 'user_id', e.target.value)}
+                        required
+                        className="split-user-select"
+                      >
+                        <option value="">Select User...</option>
+                        {availableUsers
+                          .filter(u => u.id !== user.id) // Don't show self
+                          .map(u => (
+                            <option key={u.id} value={u.id}>
+                              {u.username} ({u.role})
+                            </option>
+                          ))
+                        }
+                      </select>
+                      <input
+                        type="number"
+                        step="0.1"
+                        min="0"
+                        max="100"
+                        value={split.percentage}
+                        onChange={(e) => updateSplit(index, 'percentage', e.target.value)}
+                        placeholder="%"
+                        required
+                        className="split-percentage-input"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeSplit(index)}
+                        className="remove-split-btn"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+
+                  <button type="button" onClick={addSplit} className="add-split-btn">
+                    + Add Split
+                  </button>
+                </div>
+              )}
+
+              <button type="submit" className="add-payment-button">Add Payment</button>
             </form>
           </div>
         </div>

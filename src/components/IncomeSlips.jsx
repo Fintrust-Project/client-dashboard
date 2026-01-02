@@ -94,7 +94,14 @@ const IncomeSlips = () => {
             const { data: payments, error } = await query
             if (error) throw error
 
-            // 2. Group by User
+            // 2. Fetch all splits for these payments
+            const paymentIds = payments.map(p => p.id)
+            const { data: splits } = await supabase
+                .from('payment_splits')
+                .select('*')
+                .in('payment_id', paymentIds)
+
+            // 3. Group by User
             const grouped = {}
             payments.forEach(p => {
                 if (!grouped[p.user_id]) {
@@ -106,15 +113,56 @@ const IncomeSlips = () => {
                         records: []
                     }
                 }
-                const amount = parseFloat(p.amount || 0)
-                grouped[p.user_id].totalAmount += amount
+                const fullAmount = parseFloat(p.amount || 0)
+
+                // Check if this payment has splits for this user
+                const userSplit = splits?.find(s => s.payment_id === p.id && s.user_id === p.user_id)
+                const actualAmount = userSplit ? parseFloat(userSplit.amount) : fullAmount
+                const splitPercentage = userSplit ? parseFloat(userSplit.percentage) : 100
+
+                grouped[p.user_id].totalAmount += actualAmount
                 grouped[p.user_id].records.push({
                     date: p.date,
                     account: p.account_id || 'N/A',
                     clientName: p.clients?.name || 'Unknown',
                     clientMobile: p.clients?.mobile || '-',
-                    amount: amount
+                    fullAmount: fullAmount,
+                    actualAmount: actualAmount,
+                    splitPercentage: splitPercentage,
+                    hasSplit: !!userSplit
                 })
+            })
+
+            // 4. Also add records for users who received splits but weren't the primary payment owner
+            splits?.forEach(split => {
+                if (split.user_id === user.id || user.role === 'admin' ||
+                    (user.role === 'manager' && Object.values(profiles).find(p => p.id === split.user_id && p.manager_id === user.id))) {
+
+                    const payment = payments.find(p => p.id === split.payment_id)
+                    if (!payment || payment.user_id === split.user_id) return // Skip if already processed
+
+                    if (!grouped[split.user_id]) {
+                        grouped[split.user_id] = {
+                            userId: split.user_id,
+                            userName: profiles[split.user_id]?.username || 'Unknown Agent',
+                            userRole: profiles[split.user_id]?.role || 'User',
+                            totalAmount: 0,
+                            records: []
+                        }
+                    }
+
+                    grouped[split.user_id].totalAmount += parseFloat(split.amount)
+                    grouped[split.user_id].records.push({
+                        date: payment.date,
+                        account: payment.account_id || 'N/A',
+                        clientName: payment.clients?.name || 'Unknown',
+                        clientMobile: payment.clients?.mobile || '-',
+                        fullAmount: parseFloat(payment.amount),
+                        actualAmount: parseFloat(split.amount),
+                        splitPercentage: parseFloat(split.percentage),
+                        hasSplit: true
+                    })
+                }
             })
 
             setSlipsData(Object.values(grouped))
@@ -219,7 +267,8 @@ const IncomeSlips = () => {
                                             <tr>
                                                 <th>Date</th>
                                                 <th>Particulars (Client / Mobile / Account)</th>
-                                                <th className="amount-col">Amount (INR)</th>
+                                                <th className="amount-col">Full Amount</th>
+                                                <th className="amount-col">Your Share</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -232,21 +281,35 @@ const IncomeSlips = () => {
                                                             <span className="details">Mobile: {record.clientMobile} | Acc: {record.account}</span>
                                                         </div>
                                                     </td>
-                                                    <td className="amount-col">{record.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                                                    <td className="amount-col">
+                                                        {record.fullAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                                                    </td>
+                                                    <td className="amount-col">
+                                                        {record.hasSplit && record.splitPercentage < 100 ? (
+                                                            <>
+                                                                <div style={{ fontSize: '0.85em', color: '#3b82f6', fontWeight: '600' }}>
+                                                                    {record.splitPercentage.toFixed(1)}%
+                                                                </div>
+                                                                <div>{record.actualAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</div>
+                                                            </>
+                                                        ) : (
+                                                            <div>{record.actualAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</div>
+                                                        )}
+                                                    </td>
                                                 </tr>
                                             ))}
                                         </tbody>
                                         <tfoot>
                                             <tr className="summary-row total-sales-row">
-                                                <td colSpan="2" className="label-cell">Total Gross Sales / Collection</td>
+                                                <td colSpan="3" className="label-cell">Total Gross Sales / Collection</td>
                                                 <td className="amount-cell">₹{slip.totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
                                             </tr>
                                             <tr className="summary-row gst-row">
-                                                <td colSpan="2" className="label-cell">Less: GST @ 18%</td>
+                                                <td colSpan="3" className="label-cell">Less: GST @ 18%</td>
                                                 <td className="amount-cell red-text">- ₹{gstAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
                                             </tr>
                                             <tr className="summary-row net-pay-row">
-                                                <td colSpan="2" className="label-cell">NET PAYABLE INCOME</td>
+                                                <td colSpan="3" className="label-cell">NET PAYABLE INCOME</td>
                                                 <td className="amount-cell highlight-green">₹{netPayable.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
                                             </tr>
                                         </tfoot>
