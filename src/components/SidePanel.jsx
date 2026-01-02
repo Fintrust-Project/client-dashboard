@@ -22,12 +22,14 @@ const SidePanel = ({ activeView, setActiveView }) => {
   if (user?.role === 'manager') {
     menuItems.push({ id: 'team', label: 'Team Management', icon: '👨‍👩‍👧‍👦' })
     menuItems.push({ id: 'strategies', label: 'Post Strategy', icon: '💡' })
+    menuItems.push({ id: 'slips', label: 'Income Slips', icon: '📄' })
   }
 
   if (user?.role === 'admin') {
     menuItems.push({ id: 'strategies', label: 'Post Strategy', icon: '💡' })
     menuItems.push({ id: 'users', label: 'User Management', icon: '⚙️' })
     menuItems.push({ id: 'verifications', label: 'Verifications', icon: '✅' })
+    menuItems.push({ id: 'slips', label: 'Income Slips', icon: '📄' })
   }
 
   return (
