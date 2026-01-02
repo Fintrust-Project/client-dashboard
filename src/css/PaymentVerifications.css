@@ -118,13 +118,13 @@
 }
 
 .value {
-    color: #fef3c7;
+    color: #DBEAFE;
     font-weight: 600;
     text-align: right;
 }
 
 .amount {
-    color: #fbbf24;
+    color: #DBEAFE;
     font-weight: 700;
     font-size: 1.1rem;
 }
@@ -164,7 +164,7 @@
 
 .split-value {
     font-weight: 600;
-    color: #fef3c7;
+    color: #DBEAFE;
 }
 
 .status-badge {
