@@ -77,24 +77,11 @@ const StrategyBanner = () => {
         try {
             setLoading(true)
 
-            // Get today's date in IST (UTC+5:30)
-            const now = new Date()
-            const istOffset = 5.5 * 60 * 60 * 1000 // IST is UTC+5:30
-            const istTime = new Date(now.getTime() + istOffset)
-
-            // Set to start of day in IST
-            istTime.setUTCHours(0, 0, 0, 0)
-
-            // Convert back to UTC for database query
-            const todayStartIST = new Date(istTime.getTime() - istOffset)
-            const todayISO = todayStartIST.toISOString()
-
-            // Fetch company-wide strategy (only today's in IST)
+            // Fetch latest company-wide strategy (no date filter for ensuring visibility during testing)
             const { data: company, error: companyError } = await supabase
                 .from('strategies')
                 .select('*, profiles!author_id(username)')
                 .eq('scope', 'company')
-                .gte('created_at', todayISO)
                 .order('created_at', { ascending: false })
                 .limit(1)
                 .maybeSingle()
@@ -116,19 +103,22 @@ const StrategyBanner = () => {
 
             setCompanyStrategy(company)
 
-            // Fetch team-specific strategy (only today's in IST)
-            const { data: team, error: teamError } = await supabase
-                .from('strategies')
-                .select('*, profiles!author_id(username)')
-                .eq('scope', 'team')
-                .eq('target_team_id', user?.manager_id || 'none')
-                .gte('created_at', todayISO)
-                .order('created_at', { ascending: false })
-                .limit(1)
-                .maybeSingle()
+            // Fetch latest team-specific strategy
+            let team = null
+            if (user?.manager_id) {
+                const { data: teamData, error: teamError } = await supabase
+                    .from('strategies')
+                    .select('*, profiles!author_id(username)')
+                    .eq('scope', 'team')
+                    .eq('target_team_id', user.manager_id)
+                    .order('created_at', { ascending: false })
+                    .limit(1)
+                    .maybeSingle()
 
-            if (teamError) {
-                console.error('Team strategy error:', teamError)
+                if (teamError) {
+                    console.error('Team strategy error:', teamError)
+                }
+                team = teamData
             }
 
             // Check if this is a new team strategy
