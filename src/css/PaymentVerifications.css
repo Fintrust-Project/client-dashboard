@@ -1,9 +1,10 @@
 /* Payment Verifications Container */
 .verifications-container {
-    background: white;
+    background: #1e293b;
     border-radius: 12px;
-    padding: 2rem;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+    border: 1px solid #334155;
     min-height: 80vh;
 }
 
@@ -11,55 +12,57 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2rem;
-    border-bottom: 1px solid #f1f5f9;
-    padding-bottom: 1rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid #334155;
+    padding-bottom: 0.75rem;
 }
 
 .verifications-header h2 {
-    font-size: 1.5rem;
-    color: #1e293b;
+    font-size: 1.25rem;
+    color: #f8fafc;
     margin: 0;
 }
 
 .header-controls {
     display: flex;
-    gap: 1rem;
+    gap: 0.75rem;
     align-items: center;
 }
 
 /* Tabs */
 .tabs {
     display: flex;
-    gap: 0.5rem;
-    background: #f1f5f9;
-    padding: 4px;
+    gap: 0.25rem;
+    background: #0f172a;
+    padding: 3px;
     border-radius: 8px;
 }
 
 .tab-btn {
-    padding: 8px 16px;
+    padding: 6px 14px;
     border: none;
     background: transparent;
-    color: #64748b;
+    color: #94a3b8;
     font-weight: 500;
+    font-size: 0.85rem;
     border-radius: 6px;
     cursor: pointer;
     transition: all 0.2s;
 }
 
 .tab-btn.active {
-    background: white;
+    background: #334155;
     color: #3b82f6;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .refresh-btn {
-    background: #f8fafc;
-    border: 1px solid #cbd5e1;
-    color: #475569;
-    padding: 0.5rem 1rem;
+    background: #0f172a;
+    border: 1px solid #334155;
+    color: #94a3b8;
+    padding: 0.4rem 0.8rem;
     border-radius: 8px;
+    font-size: 0.85rem;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s;
@@ -73,28 +76,29 @@
 /* Payment Cards */
 .payment-cards {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1rem;
 }
 
 .payment-card {
-    border: 1px solid #e2e8f0;
+    border: 1px solid #334155;
     border-radius: 12px;
-    padding: 1.5rem;
-    background: white;
+    padding: 1rem;
+    background: #1e293b;
     transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .payment-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    background: #1e293b;
 }
 
 .info-row {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 0.8rem;
-    font-size: 0.95rem;
+    margin-bottom: 0.6rem;
+    font-size: 0.85rem;
 }
 
 .message-row {

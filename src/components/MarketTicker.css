@@ -1,23 +1,23 @@
 .market-ticker {
     display: flex;
     align-items: center;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    padding: 0.5rem 1rem;
-    border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    gap: 1.5rem;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    background: rgba(30, 41, 59, 0.7);
+    backdrop-filter: blur(8px);
+    padding: 0.4rem 1rem;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    gap: 1.2rem;
 }
 
 .index-item {
     display: flex;
     flex-direction: column;
     gap: 0.1rem;
+    min-width: 120px;
 }
 
 .index-name {
-    font-size: 0.7rem;
+    font-size: 0.65rem;
     font-weight: 700;
     color: #94a3b8;
     text-transform: uppercase;
@@ -25,9 +25,9 @@
 }
 
 .index-price {
-    font-size: 1rem;
+    font-size: 0.95rem;
     font-weight: 700;
-    color: #1e293b;
+    color: #f8fafc;
 }
 
 .index-change {
@@ -43,25 +43,11 @@
 }
 
 .index-change.down {
-    color: #ef4444;
+    color: #f43f5e;
 }
 
 .index-divider {
     width: 1px;
-    height: 24px;
-    background: rgba(0, 0, 0, 0.1);
-}
-
-/* Dark mode adjustments if needed */
-[data-theme='dark'] .market-ticker {
-    background: rgba(15, 23, 42, 0.6);
-    border-color: rgba(255, 255, 255, 0.1);
-}
-
-[data-theme='dark'] .index-price {
-    color: #f8fafc;
-}
-
-[data-theme='dark'] .index-divider {
+    height: 20px;
     background: rgba(255, 255, 255, 0.1);
 }

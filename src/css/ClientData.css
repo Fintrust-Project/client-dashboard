@@ -1,57 +1,51 @@
 .client-data-container {
-  background: white;
+  background: #1e293b;
   border-radius: 12px;
-  padding: 2rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+  border: 1px solid #334155;
 }
 
 .client-data-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 }
 
 .client-data-header h2 {
-  color: #333;
-  font-size: 1.5rem;
+  color: #f8fafc;
+  font-size: 1.25rem;
   font-weight: 600;
 }
 
 .header-actions {
   display: flex;
-  gap: 1rem;
+  gap: 0.75rem;
 }
 
 .import-client-button {
-  padding: 0.75rem 1.5rem;
-  background: #28a745;
+  padding: 0.6rem 1.2rem;
+  background: #10b981;
   color: white;
   border: none;
   border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
-  transition: transform 0.2s;
-}
-
-.import-client-button:hover {
-  background: #218838;
-  transform: translateY(-2px);
+  transition: all 0.2s;
+  font-size: 0.9rem;
 }
 
 .add-client-button {
-  padding: 0.75rem 1.5rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 0.6rem 1.2rem;
+  background: #3b82f6;
   color: white;
   border: none;
   border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
-  transition: transform 0.2s;
-}
-
-.add-client-button:hover {
-  transform: translateY(-2px);
+  transition: all 0.2s;
+  font-size: 0.9rem;
 }
 
 .client-table-wrapper {
@@ -61,45 +55,40 @@
 .client-table {
   width: 100%;
   border-collapse: collapse;
+  font-size: 0.85rem;
 }
 
 .client-table thead {
-  background: #f8f9fa;
+  background: #0f172a;
 }
 
 .client-table th {
-  padding: 1rem;
+  padding: 0.75rem 1rem;
   text-align: left;
   font-weight: 600;
-  color: #555;
-  border-bottom: 2px solid #e0e0e0;
+  color: #94a3b8;
+  border-bottom: 1px solid #334155;
 }
 
 .client-table td {
-  padding: 1rem;
-  border-bottom: 1px solid #e0e0e0;
-  color: #333;
-}
-
-.client-row {
-  cursor: pointer;
-  transition: background-color 0.2s;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #334155;
+  color: #e2e8f0;
 }
 
 .client-row:hover {
-  background-color: #f8f9fa;
+  background-color: #334155;
 }
 
 .status-select {
-  padding: 0.4rem 0.8rem;
+  padding: 0.3rem 0.6rem;
   border-radius: 6px;
-  border: 1px solid #e2e8f0;
-  font-size: 0.85rem;
+  border: 1px solid #475569;
+  font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
-  background-color: #f8fafc;
-  transition: all 0.2s;
-  min-width: 140px;
+  background-color: #1e293b;
+  color: #f8fafc;
 }
 
 .status-select:hover {

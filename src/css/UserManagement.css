@@ -1,36 +1,34 @@
 .user-management-container {
-  background: white;
+  background: #1e293b;
   border-radius: 12px;
-  padding: 2rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+  border: 1px solid #334155;
 }
 
 .user-management-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 }
 
 .user-management-header h2 {
-  color: #333;
-  font-size: 1.5rem;
+  color: #f8fafc;
+  font-size: 1.25rem;
   font-weight: 600;
 }
 
 .add-user-button {
-  padding: 0.75rem 1.5rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 0.6rem 1.2rem;
+  background: #3b82f6;
   color: white;
   border: none;
   border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
-  transition: transform 0.2s;
-}
-
-.add-user-button:hover {
-  transform: translateY(-2px);
+  transition: all 0.2s;
+  font-size: 0.9rem;
 }
 
 .users-table-wrapper {
@@ -40,111 +38,70 @@
 .users-table {
   width: 100%;
   border-collapse: collapse;
+  font-size: 0.85rem;
 }
 
 .users-table thead {
-  background: #f8f9fa;
+  background: #0f172a;
 }
 
 .users-table th {
-  padding: 1rem;
+  padding: 0.75rem 1rem;
   text-align: left;
   font-weight: 600;
-  color: #555;
-  border-bottom: 2px solid #e0e0e0;
+  color: #94a3b8;
+  border-bottom: 1px solid #334155;
 }
 
 .users-table td {
-  padding: 1rem;
-  border-bottom: 1px solid #e0e0e0;
-  color: #333;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #334155;
+  color: #e2e8f0;
 }
 
 .role-badge {
   display: inline-block;
-  padding: 0.5rem 1rem;
+  padding: 0.25rem 0.75rem;
   border-radius: 20px;
   font-weight: 600;
-  font-size: 0.85rem;
+  font-size: 0.75rem;
 }
 
 .role-admin {
-  background: #d4edda;
-  color: #155724;
+  background: rgba(16, 185, 129, 0.2);
+  color: #10b981;
 }
 
 .role-user {
-  background: #cfe2ff;
-  color: #084298;
+  background: rgba(59, 130, 246, 0.2);
+  color: #3b82f6;
 }
 
 .role-manager {
-  background: #fff3cd;
-  color: #856404;
-}
-
-.no-data {
-  text-align: center;
-  color: #999;
-  padding: 2rem !important;
-}
-
-.message {
-  padding: 0.75rem;
-  border-radius: 8px;
-  margin-bottom: 1rem;
-  text-align: center;
-  font-weight: 500;
-}
-
-.message.success {
-  background: #d4edda;
-  color: #155724;
-}
-
-.message.error {
-  background: #f8d7da;
-  color: #721c24;
-}
-
-
-.users-table td:last-child {
-  display: flex;
-  gap: 0.5rem;
+  background: rgba(245, 158, 11, 0.2);
+  color: #f59e0b;
 }
 
 .edit-user-btn {
-  padding: 0.5rem 1rem;
-  background-color: #f8f9fa;
-  border: 1px solid #ddd;
+  padding: 0.4rem 0.8rem;
+  background-color: #334155;
+  border: 1px solid #475569;
   border-radius: 6px;
-  color: #555;
+  color: #e2e8f0;
   cursor: pointer;
   font-weight: 500;
   transition: all 0.2s;
-  font-size: 0.85rem;
-}
-
-.edit-user-btn:hover {
-  background-color: #e2e6ea;
-  border-color: #cbd3da;
-  color: #333;
+  font-size: 0.8rem;
 }
 
 .delete-user-btn {
-  padding: 0.5rem 1rem;
-  background-color: #fff1f2;
-  border: 1px solid #fecaca;
+  padding: 0.4rem 0.8rem;
+  background-color: rgba(244, 63, 94, 0.1);
+  border: 1px solid rgba(244, 63, 94, 0.2);
   border-radius: 6px;
-  color: #dc2626;
+  color: #f43f5e;
   cursor: pointer;
   font-weight: 600;
   transition: all 0.2s;
-  font-size: 0.85rem;
-}
-
-.delete-user-btn:hover {
-  background-color: #fee2e2;
-  border-color: #fca5a5;
-  color: #b91c1c;
+  font-size: 0.8rem;
 }
