@@ -358,6 +358,15 @@ const ClientProfile = ({ client, onClose }) => {
                 </div>
               </div>
 
+              {parseFloat(newPayment.amount) > 0 && (
+                <div className="payment-net-share-summary" style={{ marginBottom: '1rem', padding: '0.8rem', background: '#ecfdf5', borderRadius: '8px', border: '1px solid #10b981', color: '#065f46', fontSize: '0.95rem', fontWeight: '600', textAlign: 'center' }}>
+                  Your Net Share (after {getRemainingPercentage().toFixed(1)}% split & 18% GST):
+                  <span style={{ marginLeft: '8px', fontSize: '1.1rem', color: '#059669' }}>
+                    ₹{((parseFloat(newPayment.amount) * getRemainingPercentage() / 100) * 0.82).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </span>
+                </div>
+              )}
+
               {/* Split Commission Toggle */}
               <div className="split-toggle-section">
                 <label className="split-checkbox">
@@ -380,6 +389,11 @@ const ClientProfile = ({ client, onClose }) => {
                     <h5>Commission Distribution</h5>
                     <span className="remaining-percentage">
                       Remaining for you: {getRemainingPercentage().toFixed(1)}%
+                      {parseFloat(newPayment.amount) > 0 && (
+                        <strong style={{ marginLeft: '10px', color: '#10b981' }}>
+                          (Est. Share: ₹{((parseFloat(newPayment.amount) * getRemainingPercentage() / 100) * 0.82).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})
+                        </strong>
+                      )}
                     </span>
                   </div>
 
