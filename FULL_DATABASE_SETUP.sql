@@ -85,28 +85,34 @@ create trigger update_payments_updated_at before update on public.payments for e
 -- 6. RLS Policies
 
 -- Clients: Admin manages all, Users see assigned (or if they have engagement)
+drop policy if exists "Admin total control clients" on public.clients;
 create policy "Admin total control clients" on public.clients for all using (
   exists (select 1 from public.profiles where id = auth.uid() and role = 'admin')
 );
 
+drop policy if exists "Users see clients they engage with" on public.clients;
 create policy "Users see clients they engage with" on public.clients for select using (
   exists (select 1 from public.engagements where client_id = public.clients.id and user_id = auth.uid())
 );
 
 -- Engagements: Admin manages all, Users manage own
+drop policy if exists "Admin total control engagements" on public.engagements;
 create policy "Admin total control engagements" on public.engagements for all using (
   exists (select 1 from public.profiles where id = auth.uid() and role = 'admin')
 );
 
+drop policy if exists "Users view/update own engagements" on public.engagements;
 create policy "Users view/update own engagements" on public.engagements for all using (
   user_id = auth.uid()
 );
 
 -- Payments: Admin manages all, Users view/insert own
+drop policy if exists "Admin manage all payments" on public.payments;
 create policy "Admin manage all payments" on public.payments for all using (
   exists (select 1 from public.profiles where id = auth.uid() and role = 'admin')
 );
 
+drop policy if exists "Users view/insert own payments" on public.payments;
 create policy "Users view/insert own payments" on public.payments for all using (
   user_id = auth.uid()
 );
@@ -124,18 +130,22 @@ create table if not exists public.strategies (
 alter table public.strategies enable row level security;
 
 -- Strategy Policies
+drop policy if exists "Admins manage all strategies" on public.strategies;
 create policy "Admins manage all strategies" on public.strategies for all using (
   exists (select 1 from public.profiles where id = auth.uid() and role = 'admin')
 );
 
+drop policy if exists "Managers manage own team strategies" on public.strategies;
 create policy "Managers manage own team strategies" on public.strategies for all using (
   auth.uid() = author_id
 );
 
+drop policy if exists "Everyone can view company wide strategies" on public.strategies;
 create policy "Everyone can view company wide strategies" on public.strategies for select using (
   scope = 'company'
 );
 
+drop policy if exists "Team members can view their managers strategies" on public.strategies;
 create policy "Team members can view their managers strategies" on public.strategies for select using (
   scope = 'team' and target_team_id = (
      select manager_id from public.profiles where id = auth.uid()
