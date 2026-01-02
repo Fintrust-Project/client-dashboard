@@ -10,6 +10,7 @@ import TeamManagement from './TeamManagement'
 import PaymentVerifications from './PaymentVerifications'
 import StrategyManager from './StrategyManager'
 import StrategyBanner from './StrategyBanner'
+import IncomeSlips from './IncomeSlips'
 import '../css/Dashboard.css'
 
 const Dashboard = () => {
@@ -34,6 +35,8 @@ const Dashboard = () => {
         return user?.role === 'admin' ? <UserManagement /> : null
       case 'verifications':
         return user?.role === 'admin' ? <PaymentVerifications /> : null
+      case 'slips':
+        return (user?.role === 'admin' || user?.role === 'manager') ? <IncomeSlips /> : null
       default:
         return <IncomeChart />
     }

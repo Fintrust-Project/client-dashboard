@@ -1,0 +1,203 @@
+.income-slips-container {
+    padding: 2rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    min-height: 80vh;
+}
+
+.slips-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #eee;
+}
+
+.slips-header h2 {
+    font-size: 1.5rem;
+    color: #1e293b;
+}
+
+.controls-area {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.month-selector {
+    padding: 0.5rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 1rem;
+    color: #334155;
+    outline: none;
+}
+
+.month-selector:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.generate-btn {
+    background: #3b82f6;
+    color: white;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.generate-btn:hover {
+    background: #2563eb;
+}
+
+.slips-list {
+    display: grid;
+    gap: 2rem;
+}
+
+.slip-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 0;
+    overflow: hidden;
+    background: #f8fafc;
+}
+
+.slip-header {
+    background: #1e293b;
+    color: white;
+    padding: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.agent-info h3 {
+    margin: 0;
+    font-size: 1.2rem;
+}
+
+.agent-info .role {
+    font-size: 0.85rem;
+    opacity: 0.8;
+    text-transform: capitalize;
+}
+
+.slip-summary .total-label {
+    display: block;
+    font-size: 0.85rem;
+    opacity: 0.8;
+    text-align: right;
+}
+
+.slip-summary .total-amount {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #4ade80;
+}
+
+.slip-table-container {
+    padding: 1rem;
+    background: white;
+}
+
+.slip-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.slip-table th,
+.slip-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.slip-table th {
+    background: #f8fafc;
+    color: #64748b;
+    font-weight: 600;
+}
+
+.slip-table td {
+    color: #334155;
+}
+
+.slip-table .amount-col {
+    text-align: right;
+    font-family: 'Courier New', monospace;
+    font-weight: 600;
+}
+
+.print-btn {
+    float: right;
+    margin: 1rem;
+    padding: 0.5rem 1rem;
+    background: white;
+    border: 1px solid #cbd5e1;
+    color: #334155;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.print-btn:hover {
+    background: #f1f5f9;
+    border-color: #94a3b8;
+}
+
+/* Print Styles */
+@media print {
+    body * {
+        visibility: hidden;
+    }
+
+    .dashboard,
+    .side-panel,
+    .dashboard-header {
+        display: none;
+    }
+
+    .income-slips-container,
+    .income-slips-container * {
+        visibility: visible;
+    }
+
+    .income-slips-container {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        box-shadow: none;
+    }
+
+    .slip-card {
+        page-break-inside: avoid;
+        margin-bottom: 2rem;
+        border: 2px solid #000;
+    }
+
+    .slip-header {
+        background: #f0f0f0 !important;
+        color: black !important;
+        border-bottom: 2px solid #000;
+    }
+
+    .slip-summary .total-amount {
+        color: black !important;
+    }
+
+    .controls-area,
+    .print-btn {
+        display: none;
+    }
+}
