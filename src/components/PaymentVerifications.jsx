@@ -214,12 +214,12 @@ const PaymentVerifications = () => {
                                             <span className="value">{format(new Date(payment.date), 'MMM dd, yyyy')}</span>
                                         </div>
                                         {payment.splits && payment.splits.length > 0 && (
-                                            <div className="payment-splits-info" style={{ marginTop: '0.8rem', padding: '0.5rem', background: '#f8fafc', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
-                                                <div style={{ fontSize: '0.75rem', fontWeight: '700', color: '#64748b', marginBottom: '0.3rem', textTransform: 'uppercase' }}>Comission Distribution</div>
+                                            <div className="payment-splits-info">
+                                                <div className="splits-title">Comission Distribution</div>
                                                 {payment.splits.map((s, idx) => (
-                                                    <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: '#475569', marginBottom: '0.2rem' }}>
-                                                        <span>@{s.profiles?.username}</span>
-                                                        <span style={{ fontWeight: '600' }}>{s.percentage}% (₹{parseFloat(s.amount).toFixed(2)})</span>
+                                                    <div key={idx} className="split-row">
+                                                        <span className="split-agent">@{s.profiles?.username}</span>
+                                                        <span className="split-value">{s.percentage}% (₹{parseFloat(s.amount).toFixed(2)})</span>
                                                     </div>
                                                 ))}
                                             </div>

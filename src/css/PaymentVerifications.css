@@ -69,8 +69,9 @@
 }
 
 .refresh-btn:hover {
-    background: #f1f5f9;
-    border-color: #94a3b8;
+    background: #334155;
+    color: #f8fafc;
+    border-color: #3b82f6;
 }
 
 /* Payment Cards */
@@ -104,59 +105,101 @@
 .message-row {
     flex-direction: column;
     gap: 4px;
-    background: #fffbeb;
+    background: rgba(255, 251, 235, 0.05);
     padding: 0.8rem;
     border-radius: 8px;
     margin-top: 1rem;
+    border: 1px solid rgba(251, 191, 36, 0.2);
 }
 
 .label {
-    color: #64748b;
+    color: #94a3b8;
     font-weight: 500;
 }
 
 .value {
-    color: #1e293b;
+    color: #f8fafc;
     font-weight: 600;
     text-align: right;
 }
 
 .amount {
-    color: #16a34a;
+    color: #10b981;
     font-weight: 700;
     font-size: 1.1rem;
 }
 
+.payment-splits-info {
+    margin-top: 0.8rem;
+    padding: 0.8rem;
+    background: #0f172a;
+    border-radius: 8px;
+    border: 1px solid #334155;
+}
+
+.splits-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #94a3b8;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.split-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: #e2e8f0;
+    margin-bottom: 0.3rem;
+}
+
+.split-row:last-child {
+    margin-bottom: 0;
+}
+
+.split-agent {
+    color: #94a3b8;
+}
+
+.split-value {
+    font-weight: 600;
+    color: #f8fafc;
+}
+
 .status-badge {
-    padding: 2px 8px;
-    border-radius: 12px;
-    font-size: 0.8rem;
-    text-transform: capitalize;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
 }
 
 .status-waiting {
-    background: #fef3c7;
-    color: #d97706;
+    background: rgba(245, 158, 11, 0.2);
+    color: #f59e0b;
 }
 
 .status-contacted {
-    background: #dbeafe;
-    color: #2563eb;
+    background: rgba(59, 130, 246, 0.2);
+    color: #3b82f6;
 }
 
 .status-interested {
-    background: #dcfce7;
-    color: #16a34a;
+    background: rgba(16, 185, 129, 0.2);
+    color: #10b981;
 }
 
 .status-closed {
-    background: #166534;
-    color: white;
+    background: rgba(16, 185, 129, 0.3);
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.2);
 }
 
 .status-rejected {
-    background: #fee2e2;
-    color: #dc2626;
+    background: rgba(244, 63, 94, 0.2);
+    color: #f43f5e;
 }
 
 .message-text {
@@ -232,20 +275,21 @@
 }
 
 .modal-content {
-    background: white;
+    background: #1e293b;
     border-radius: 16px;
-    padding: 2rem;
+    padding: 1.5rem;
     width: 90%;
     max-width: 500px;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
     position: relative;
+    border: 1px solid #334155;
 }
 
 .modal-content h3 {
     margin-top: 0;
-    color: #1e293b;
+    color: #f8fafc;
     font-size: 1.25rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.25rem;
 }
 
 .modal-form .form-group {
@@ -255,19 +299,20 @@
 .modal-form label {
     display: block;
     margin-bottom: 0.5rem;
-    color: #475569;
+    color: #94a3b8;
     font-weight: 500;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
 }
 
 .modal-form input,
 .modal-form select {
     width: 100%;
-    padding: 0.8rem;
-    border: 1px solid #cbd5e1;
+    padding: 0.75rem;
+    background: #0f172a;
+    border: 1px solid #334155;
     border-radius: 8px;
-    font-size: 1rem;
-    color: #1e293b;
+    font-size: 0.95rem;
+    color: #f8fafc;
 }
 
 .modal-form input:focus {
@@ -292,8 +337,8 @@
 }
 
 .btn-cancel {
-    background: #f1f5f9;
-    color: #64748b;
+    background: #334155;
+    color: #94a3b8;
 }
 
 .btn-submit {
@@ -339,27 +384,29 @@
 
 /* Receipt Design (Visible inside modal or separate view) */
 .receipt-layout {
-    border: 2px solid #1e293b;
-    padding: 2rem;
+    border: 2px solid #334155;
+    padding: 1.5rem;
     font-family: 'Inter', sans-serif;
+    background: #0f172a;
+    color: #f8fafc;
 }
 
 .receipt-header {
     text-align: center;
-    border-bottom: 2px solid #1e293b;
+    border-bottom: 2px solid #334155;
     padding-bottom: 1rem;
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
 }
 
 .receipt-header h1 {
-    font-size: 2.5rem;
+    font-size: 2rem;
     margin: 0;
-    color: #1e293b;
+    color: #f8fafc;
     letter-spacing: 2px;
 }
 
 .receipt-header p {
-    color: #64748b;
+    color: #94a3b8;
     margin: 5px 0 0;
 }
 
@@ -372,18 +419,18 @@
 .receipt-row {
     display: flex;
     justify-content: space-between;
-    border-bottom: 1px dotted #cbd5e1;
+    border-bottom: 1px dotted #334155;
     padding-bottom: 0.5rem;
 }
 
 .receipt-label {
     font-weight: 600;
-    color: #64748b;
+    color: #94a3b8;
 }
 
 .receipt-value {
     font-weight: 600;
-    color: #1e293b;
+    color: #f8fafc;
     text-align: right;
 }
 
@@ -395,13 +442,14 @@
 
 .receipt-table th,
 .receipt-table td {
-    border: 1px solid #1e293b;
+    border: 1px solid #334155;
     padding: 12px;
 }
 
 .receipt-table th {
-    background: #f1f5f9;
+    background: #1e293b;
     text-align: left;
+    color: #94a3b8;
 }
 
 .receipt-table .amount-right {
