@@ -34,20 +34,72 @@ const TeamManagement = () => {
       if (memErr) throw memErr
       setTeamMembers(members || [])
 
-      // 2. Fetch verified payments
-      let payQuery = supabase
-        .from('payments')
-        .select('amount, date, user_id')
-        .eq('status', 'verified')
+      const memberIds = members?.map(m => m.id) || []
+      const allTeamIds = [user.id, ...memberIds]
 
-      if (user.role !== 'admin') {
-        const targetIds = [user.id, ...(members?.map(m => m.id) || [])]
-        payQuery = payQuery.in('user_id', targetIds)
+      // 2. Fetch verified payments where any team member is either owner or split recipient
+      // This ensures we get all payments that might have a share for our team
+      const { data: payData, error: payErr } = await supabase
+        .from('payments')
+        .select('id, amount, date, user_id')
+        .eq('status', 'verified')
+      // We'll fetch more than we need and filter in JS for simplicity/reliability
+
+      if (payErr) throw payErr
+
+      // 3. Fetch splits for ALL these payments
+      const paymentIds = payData.map(p => p.id)
+      let splits = []
+      if (paymentIds.length > 0) {
+        // Chunking the array if it's too large might be needed, but usually 1000 items is fine for .in()
+        const { data: splitData, error: splitErr } = await supabase
+          .from('payment_splits')
+          .select('*')
+          .in('payment_id', paymentIds)
+
+        if (splitErr) throw splitErr
+        splits = splitData || []
       }
 
-      const { data: payData, error: payErr } = await payQuery
-      if (payErr) throw payErr
-      setPayments(payData || [])
+      // 4. Process into Shares
+      const shares = []
+      payData.forEach(p => {
+        const pSplits = splits.filter(s => s.payment_id === p.id)
+        const fullAmount = parseFloat(p.amount || 0)
+
+        if (pSplits.length === 0) {
+          // No splits, belongs to owner
+          shares.push({
+            amount: fullAmount,
+            date: p.date,
+            user_id: p.user_id
+          })
+        } else {
+          // Has splits
+          pSplits.forEach(s => {
+            shares.push({
+              amount: parseFloat(s.amount),
+              date: p.date,
+              user_id: s.user_id
+            })
+          })
+
+          // Remainder for owner
+          const totalSplit = pSplits.reduce((sum, s) => sum + parseFloat(s.amount), 0)
+          const remainder = fullAmount - totalSplit
+          if (remainder > 0.01) {
+            shares.push({
+              amount: remainder,
+              date: p.date,
+              user_id: p.user_id
+            })
+          }
+        }
+      })
+
+      // 5. Filter shares for the team
+      const teamShares = shares.filter(s => allTeamIds.includes(s.user_id))
+      setPayments(teamShares)
 
     } catch (err) {
       console.error('Error loading team stats:', err.message)

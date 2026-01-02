@@ -20,28 +20,87 @@ const IncomeChart = () => {
   const fetchIncomeData = async () => {
     try {
       setLoading(true)
-      let query = supabase
+
+      // 1. Fetch ALL verified payments (we'll filter shares later)
+      // For Admins, we need all. For Managers, we need their team's payments. 
+      // For Users, we only need their own.
+      let paymentsQuery = supabase
         .from('payments')
-        .select('amount, date, status, user_id')
+        .select('id, amount, date, status, user_id')
         .eq('status', 'verified')
 
-      // Role-based filtering
       if (user?.role === 'manager') {
-        // Fetch team members
-        const { data: team } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('manager_id', user.id)
-
-        const ids = [user.id, ...(team?.map(t => t.id) || [])]
-        query = query.in('user_id', ids)
+        const { data: team } = await supabase.from('profiles').select('id').eq('manager_id', user.id)
+        const teamIds = [user.id, ...(team?.map(t => t.id) || [])]
+        // Join with splits to find all relevant payments
+        // This is complex for a single query, so we fetch payments where team is either owner or split recipient
+        paymentsQuery = paymentsQuery.or(`user_id.in.(${teamIds.join(',')})`)
       } else if (user?.role === 'user') {
-        query = query.eq('user_id', user.id)
+        paymentsQuery = paymentsQuery.eq('user_id', user.id)
       }
 
-      const { data, error } = await query
-      if (error) throw error
-      setPayments(data || [])
+      const { data: allPayments, error: payErr } = await paymentsQuery
+      if (payErr) throw payErr
+
+      // 2. Fetch splits for these payments
+      const paymentIds = allPayments.map(p => p.id)
+      let splits = []
+      if (paymentIds.length > 0) {
+        const { data: splitData, error: splitErr } = await supabase
+          .from('payment_splits')
+          .select('*')
+          .in('payment_id', paymentIds)
+        if (splitErr) throw splitErr
+        splits = splitData || []
+      }
+
+      // 3. Process shares
+      const shares = []
+      allPayments.forEach(p => {
+        const pSplits = splits.filter(s => s.payment_id === p.id)
+        const fullAmount = parseFloat(p.amount || 0)
+
+        if (pSplits.length === 0) {
+          // No splits, full amount belongs to owner
+          shares.push({
+            amount: fullAmount,
+            date: p.date,
+            user_id: p.user_id
+          })
+        } else {
+          // Has splits
+          pSplits.forEach(s => {
+            shares.push({
+              amount: parseFloat(s.amount),
+              date: p.date,
+              user_id: s.user_id
+            })
+          })
+
+          // Calculate remainder for owner
+          const totalSplitAmount = pSplits.reduce((sum, s) => sum + parseFloat(s.amount), 0)
+          const remainder = fullAmount - totalSplitAmount
+          if (remainder > 0.01) { // Floating point safety
+            shares.push({
+              amount: remainder,
+              date: p.date,
+              user_id: p.user_id
+            })
+          }
+        }
+      })
+
+      // 4. Role-based filtering of SHARES
+      let filteredShares = shares
+      if (user?.role === 'manager') {
+        const { data: team } = await supabase.from('profiles').select('id').eq('manager_id', user.id)
+        const teamIds = [user.id, ...(team?.map(t => t.id) || [])]
+        filteredShares = shares.filter(s => teamIds.includes(s.user_id))
+      } else if (user?.role === 'user') {
+        filteredShares = shares.filter(s => s.user_id === user.id)
+      }
+
+      setPayments(filteredShares)
 
       // Fetch profiles for names
       const { data: profileData } = await supabase.from('profiles').select('id, username, role, manager_id')

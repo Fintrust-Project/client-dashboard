@@ -59,7 +59,18 @@ const PaymentVerifications = () => {
 
             setTotalCount(count || 0)
 
-            // Enrich with Engagement info (for status badges)
+            // 2. Fetch splits for these payments
+            const paymentIds = rawPayments.map(p => p.id)
+            let allSplits = []
+            if (paymentIds.length > 0) {
+                const { data: splitData } = await supabase
+                    .from('payment_splits')
+                    .select(`*, profiles ( username )`)
+                    .in('payment_id', paymentIds)
+                allSplits = splitData || []
+            }
+
+            // 3. Enrich with Engagement info and Splits
             const enrichedPayments = await Promise.all(rawPayments.map(async (p) => {
                 const { data: eng } = await supabase
                     .from('engagements')
@@ -68,17 +79,19 @@ const PaymentVerifications = () => {
                     .eq('user_id', p.user_id)
                     .maybeSingle()
 
+                const pSplits = allSplits.filter(s => s.payment_id === p.id)
+
                 return {
                     ...p,
                     engagement_status: eng?.status || 'waiting',
-                    engagement_message: eng?.message || '-'
+                    engagement_message: eng?.message || '-',
+                    splits: pSplits
                 }
             }))
 
             setPayments(enrichedPayments)
         } catch (error) {
             console.error('Error loading payments:', error.message)
-            alert('Failed to load payments')
         } finally {
             setLoading(false)
         }
@@ -200,6 +213,17 @@ const PaymentVerifications = () => {
                                             <span className="label">Date:</span>
                                             <span className="value">{format(new Date(payment.date), 'MMM dd, yyyy')}</span>
                                         </div>
+                                        {payment.splits && payment.splits.length > 0 && (
+                                            <div className="payment-splits-info" style={{ marginTop: '0.8rem', padding: '0.5rem', background: '#f8fafc', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
+                                                <div style={{ fontSize: '0.75rem', fontWeight: '700', color: '#64748b', marginBottom: '0.3rem', textTransform: 'uppercase' }}>Comission Distribution</div>
+                                                {payment.splits.map((s, idx) => (
+                                                    <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: '#475569', marginBottom: '0.2rem' }}>
+                                                        <span>@{s.profiles?.username}</span>
+                                                        <span style={{ fontWeight: '600' }}>{s.percentage}% (₹{parseFloat(s.amount).toFixed(2)})</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
                                     </div>
                                     <div className="payment-actions">
                                         {activeTab === 'pending' ? (

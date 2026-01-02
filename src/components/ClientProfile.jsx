@@ -9,6 +9,7 @@ const ClientProfile = ({ client, onClose }) => {
   const [isEditing, setIsEditing] = useState(false)
   const [editFormData, setEditFormData] = useState({})
   const [paymentHistory, setPaymentHistory] = useState([])
+  const [paymentSplits, setPaymentSplits] = useState([]) // For calculating shares
   const [loadingHistory, setLoadingHistory] = useState(true)
   const [newPayment, setNewPayment] = useState({
     amount: '',
@@ -27,14 +28,25 @@ const ClientProfile = ({ client, onClose }) => {
   const fetchPaymentHistory = async () => {
     try {
       setLoadingHistory(true)
-      const { data, error } = await supabase
+      const { data: payments, error: expErr } = await supabase
         .from('payments')
         .select('*')
         .eq('client_id', client.clientId)
         .order('date', { ascending: false })
 
-      if (error) throw error
-      setPaymentHistory(data)
+      if (expErr) throw expErr
+      setPaymentHistory(payments)
+
+      // Fetch splits for these payments
+      const pIds = payments.map(p => p.id)
+      if (pIds.length > 0) {
+        const { data: splitsData, error: splitErr } = await supabase
+          .from('payment_splits')
+          .select('*')
+          .in('payment_id', pIds)
+        if (splitErr) throw splitErr
+        setPaymentSplits(splitsData || [])
+      }
     } catch (error) {
       console.error('Error fetching history:', error.message)
     } finally {
@@ -192,9 +204,21 @@ const ClientProfile = ({ client, onClose }) => {
     }
   }
 
-  const displayTotalPaid = paymentHistory.reduce((sum, p) => {
+  const displayTotalCollection = paymentHistory.reduce((sum, p) => {
     if (p.status !== 'verified') return sum
     return sum + parseFloat(p.amount || 0)
+  }, 0)
+
+  const userTotalShare = paymentHistory.reduce((sum, p) => {
+    if (p.status !== 'verified') return sum
+    const pSplits = paymentSplits.filter(s => s.payment_id === p.id)
+    const userSplit = pSplits.find(s => s.user_id === user.id)
+    if (userSplit) return sum + parseFloat(userSplit.amount)
+    if (p.user_id === user.id) {
+      const totalSplitAmount = pSplits.reduce((acc, s) => acc + parseFloat(s.amount), 0)
+      return sum + (parseFloat(p.amount) - totalSplitAmount)
+    }
+    return sum
   }, 0)
 
   return (
@@ -316,7 +340,7 @@ const ClientProfile = ({ client, onClose }) => {
           )}
 
           <div className="profile-section">
-            <h3>Payment History (verified: ₹{displayTotalPaid.toFixed(2)})</h3>
+            <h3>Payment History (Collection: ₹{displayTotalCollection.toLocaleString()} | Your Share: ₹{userTotalShare.toLocaleString()})</h3>
             {loadingHistory ? (
               <p>Loading payments...</p>
             ) : paymentHistory.length > 0 ? (
