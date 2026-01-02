@@ -49,10 +49,11 @@ const IncomeSlips = () => {
             const start = startOfMonth(date).toISOString()
             const end = endOfMonth(date).toISOString()
 
-            // 1. Fetch Payments
-            let query = supabase
+            // 1. Fetch ALL verified payments for the month (we'll filter by splits later)
+            const { data: allPayments, error: payErr } = await supabase
                 .from('payments')
                 .select(`
+                    id,
                     amount, 
                     date, 
                     account_id, 
@@ -63,109 +64,129 @@ const IncomeSlips = () => {
                 .gte('date', start)
                 .lte('date', end)
 
-            // Role filtering
-            // Role filtering & User Selection
-            if (user.role === 'manager') {
-                // Determine team members
-                const teamIds = Object.values(profiles)
-                    .filter(p => p.manager_id === user.id)
-                    .map(p => p.id)
-                teamIds.push(user.id) // Include self
+            if (payErr) throw payErr
 
-                if (selectedAgentId !== 'all') {
-                    if (teamIds.includes(selectedAgentId)) {
-                        query = query.eq('user_id', selectedAgentId)
-                    } else {
-                        // Manager trying to select someone not in team? Block or show empty.
-                        query = query.eq('user_id', '00000000-0000-0000-0000-000000000000')
-                    }
-                } else {
-                    query = query.in('user_id', teamIds)
-                }
-
-            } else if (user.role === 'admin') {
-                if (selectedAgentId !== 'all') {
-                    query = query.eq('user_id', selectedAgentId)
-                }
-            } else if (user.role === 'user') {
-                query = query.eq('user_id', user.id)
-            }
-
-            const { data: payments, error } = await query
-            if (error) throw error
-
-            // 2. Fetch all splits for these payments
-            const paymentIds = payments.map(p => p.id)
-            const { data: splits } = await supabase
+            // 2. Fetch ALL splits for these payments
+            const paymentIds = allPayments.map(p => p.id)
+            const { data: allSplits, error: splitErr } = await supabase
                 .from('payment_splits')
                 .select('*')
                 .in('payment_id', paymentIds)
 
-            // 3. Group by User
-            const grouped = {}
-            payments.forEach(p => {
-                if (!grouped[p.user_id]) {
-                    grouped[p.user_id] = {
-                        userId: p.user_id,
-                        userName: profiles[p.user_id]?.username || 'Unknown Agent',
-                        userRole: profiles[p.user_id]?.role || 'User',
-                        totalAmount: 0,
-                        records: []
-                    }
+            if (splitErr) throw splitErr
+
+            // 3. Determine which users to show based on role and selection
+            let targetUserIds = []
+
+            if (user.role === 'admin') {
+                if (selectedAgentId !== 'all') {
+                    targetUserIds = [selectedAgentId]
+                } else {
+                    // All users
+                    targetUserIds = Object.keys(profiles)
                 }
-                const fullAmount = parseFloat(p.amount || 0)
+            } else if (user.role === 'manager') {
+                const teamIds = Object.values(profiles)
+                    .filter(p => p.manager_id === user.id)
+                    .map(p => p.id)
+                teamIds.push(user.id)
 
-                // Check if this payment has splits for this user
-                const userSplit = splits?.find(s => s.payment_id === p.id && s.user_id === p.user_id)
-                const actualAmount = userSplit ? parseFloat(userSplit.amount) : fullAmount
-                const splitPercentage = userSplit ? parseFloat(userSplit.percentage) : 100
+                if (selectedAgentId !== 'all') {
+                    if (teamIds.includes(selectedAgentId)) {
+                        targetUserIds = [selectedAgentId]
+                    } else {
+                        targetUserIds = [] // Invalid selection
+                    }
+                } else {
+                    targetUserIds = teamIds
+                }
+            } else {
+                targetUserIds = [user.id]
+            }
 
-                grouped[p.user_id].totalAmount += actualAmount
-                grouped[p.user_id].records.push({
-                    date: p.date,
-                    account: p.account_id || 'N/A',
-                    clientName: p.clients?.name || 'Unknown',
-                    clientMobile: p.clients?.mobile || '-',
-                    fullAmount: fullAmount,
-                    actualAmount: actualAmount,
-                    splitPercentage: splitPercentage,
-                    hasSplit: !!userSplit
-                })
+            // 4. Build slip data for each target user
+            const grouped = {}
+
+            targetUserIds.forEach(userId => {
+                grouped[userId] = {
+                    userId: userId,
+                    userName: profiles[userId]?.username || 'Unknown Agent',
+                    userRole: profiles[userId]?.role || 'User',
+                    totalAmount: 0,
+                    records: []
+                }
             })
 
-            // 4. Also add records for users who received splits but weren't the primary payment owner
-            splits?.forEach(split => {
-                if (split.user_id === user.id || user.role === 'admin' ||
-                    (user.role === 'manager' && Object.values(profiles).find(p => p.id === split.user_id && p.manager_id === user.id))) {
+            // 5. Process each payment
+            allPayments.forEach(payment => {
+                const fullAmount = parseFloat(payment.amount || 0)
+                const paymentSplits = allSplits?.filter(s => s.payment_id === payment.id) || []
 
-                    const payment = payments.find(p => p.id === split.payment_id)
-                    if (!payment || payment.user_id === split.user_id) return // Skip if already processed
+                if (paymentSplits.length === 0) {
+                    // No splits - full amount goes to payment owner
+                    if (grouped[payment.user_id]) {
+                        grouped[payment.user_id].totalAmount += fullAmount
+                        grouped[payment.user_id].records.push({
+                            date: payment.date,
+                            account: payment.account_id || 'N/A',
+                            clientName: payment.clients?.name || 'Unknown',
+                            clientMobile: payment.clients?.mobile || '-',
+                            fullAmount: fullAmount,
+                            actualAmount: fullAmount,
+                            splitPercentage: 100,
+                            hasSplit: false
+                        })
+                    }
+                } else {
+                    // Has splits - distribute to each recipient
+                    paymentSplits.forEach(split => {
+                        if (grouped[split.user_id]) {
+                            const splitAmount = parseFloat(split.amount)
+                            const splitPercentage = parseFloat(split.percentage)
 
-                    if (!grouped[split.user_id]) {
-                        grouped[split.user_id] = {
-                            userId: split.user_id,
-                            userName: profiles[split.user_id]?.username || 'Unknown Agent',
-                            userRole: profiles[split.user_id]?.role || 'User',
-                            totalAmount: 0,
-                            records: []
+                            grouped[split.user_id].totalAmount += splitAmount
+                            grouped[split.user_id].records.push({
+                                date: payment.date,
+                                account: payment.account_id || 'N/A',
+                                clientName: payment.clients?.name || 'Unknown',
+                                clientMobile: payment.clients?.mobile || '-',
+                                fullAmount: fullAmount,
+                                actualAmount: splitAmount,
+                                splitPercentage: splitPercentage,
+                                hasSplit: true
+                            })
+                        }
+                    })
+
+                    // Also check if payment owner kept a portion (has their own split)
+                    const ownerSplit = paymentSplits.find(s => s.user_id === payment.user_id)
+                    if (!ownerSplit && grouped[payment.user_id]) {
+                        // Owner didn't create a split for themselves, so they get the remainder
+                        const totalSplitPercentage = paymentSplits.reduce((sum, s) => sum + parseFloat(s.percentage), 0)
+                        const remainingPercentage = 100 - totalSplitPercentage
+
+                        if (remainingPercentage > 0) {
+                            const remainingAmount = (fullAmount * remainingPercentage) / 100
+
+                            grouped[payment.user_id].totalAmount += remainingAmount
+                            grouped[payment.user_id].records.push({
+                                date: payment.date,
+                                account: payment.account_id || 'N/A',
+                                clientName: payment.clients?.name || 'Unknown',
+                                clientMobile: payment.clients?.mobile || '-',
+                                fullAmount: fullAmount,
+                                actualAmount: remainingAmount,
+                                splitPercentage: remainingPercentage,
+                                hasSplit: true
+                            })
                         }
                     }
-
-                    grouped[split.user_id].totalAmount += parseFloat(split.amount)
-                    grouped[split.user_id].records.push({
-                        date: payment.date,
-                        account: payment.account_id || 'N/A',
-                        clientName: payment.clients?.name || 'Unknown',
-                        clientMobile: payment.clients?.mobile || '-',
-                        fullAmount: parseFloat(payment.amount),
-                        actualAmount: parseFloat(split.amount),
-                        splitPercentage: parseFloat(split.percentage),
-                        hasSplit: true
-                    })
                 }
             })
 
-            setSlipsData(Object.values(grouped))
+            // Filter out users with no records
+            const slipsWithData = Object.values(grouped).filter(slip => slip.records.length > 0)
+            setSlipsData(slipsWithData)
 
         } catch (error) {
             console.error('Error generating slips:', error)
