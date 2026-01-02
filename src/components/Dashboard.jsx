@@ -1,0 +1,57 @@
+import React, { useState } from 'react'
+import { useAuth } from '../context/AuthContext'
+import SidePanel from './SidePanel'
+import IncomeChart from './IncomeChart'
+import ClientData from './ClientData'
+import Profile from './Profile'
+import Attendance from './Attendance'
+import UserManagement from './UserManagement'
+import TeamManagement from './TeamManagement'
+import PaymentVerifications from './PaymentVerifications'
+import StrategyManager from './StrategyManager'
+import '../css/Dashboard.css'
+
+const Dashboard = () => {
+  const { user } = useAuth()
+  const [activeView, setActiveView] = useState('dashboard')
+
+  const renderContent = () => {
+    switch (activeView) {
+      case 'dashboard':
+        return <IncomeChart />
+      case 'clients':
+        return <ClientData />
+      case 'profile':
+        return <Profile />
+      case 'attendance':
+        return <Attendance />
+      case 'team':
+        return user?.role === 'manager' ? <TeamManagement /> : null
+      case 'strategies':
+        return (user?.role === 'admin' || user?.role === 'manager') ? <StrategyManager /> : null
+      case 'users':
+        return user?.role === 'admin' ? <UserManagement /> : null
+      case 'verifications':
+        return user?.role === 'admin' ? <PaymentVerifications /> : null
+      default:
+        return <IncomeChart />
+    }
+  }
+
+  return (
+    <div className="dashboard">
+      <SidePanel activeView={activeView} setActiveView={setActiveView} />
+      <div className="dashboard-content">
+        <header className="dashboard-header">
+          <h1>Welcome, {user?.username}</h1>
+        </header>
+        <main className="dashboard-main">
+          {renderContent()}
+        </main>
+      </div>
+    </div>
+  )
+}
+
+export default Dashboard
+

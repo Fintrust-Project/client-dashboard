@@ -1,0 +1,6 @@
+Name,Mobile,Date,Status,Payment,Message
+John Doe,1234567890,2024-01-15,trader,500.00,Interested in trading
+Jane Smith,9876543210,2024-01-16,waiting,0,Waiting for approval
+Bob Johnson,5555555555,2024-01-17,not-trader,1000.00,Not interested in trading
+Alice Brown,4444444444,2024-01-18,trader,750.00,Ready to start
+

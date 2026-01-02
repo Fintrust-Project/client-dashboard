@@ -1,0 +1,71 @@
+.income-chart-container {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.chart-header h2 {
+  color: #333;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.period-toggle {
+  display: flex;
+  gap: 0.5rem;
+  background: #f0f0f0;
+  padding: 0.25rem;
+  border-radius: 8px;
+}
+
+.period-toggle button {
+  padding: 0.5rem 1rem;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  color: #666;
+  transition: all 0.3s;
+}
+
+.period-toggle button.active {
+  background: #667eea;
+  color: white;
+}
+
+.chart-summary {
+  margin-bottom: 2rem;
+}
+
+.summary-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 1.5rem;
+  border-radius: 12px;
+  color: white;
+}
+
+.summary-card h3 {
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  opacity: 0.9;
+}
+
+.summary-card .amount {
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.chart-wrapper {
+  margin-top: 2rem;
+}
+
