@@ -50,10 +50,10 @@ const Dashboard = () => {
       <div className="dashboard-content">
         <TickerTape />
         <header className="dashboard-header">
+          <StrategyBanner />
           <MarketTicker />
         </header>
         <main className="dashboard-main">
-          <StrategyBanner />
           {renderContent()}
         </main>
       </div>

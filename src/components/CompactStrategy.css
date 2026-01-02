@@ -1,0 +1,74 @@
+.compact-strategy {
+    display: flex;
+    align-items: center;
+    background: rgba(59, 130, 246, 0.1);
+    backdrop-filter: blur(8px);
+    padding: 0.4rem 0.75rem;
+    border-radius: 8px;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    gap: 0.75rem;
+    max-width: 50%;
+    overflow: hidden;
+}
+
+.strategy-indicator {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    min-width: fit-content;
+}
+
+.scope-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.scope-dot.company {
+    background-color: #3b82f6;
+    box-shadow: 0 0 8px #3b82f6;
+}
+
+.scope-dot.team {
+    background-color: #f59e0b;
+    box-shadow: 0 0 8px #f59e0b;
+}
+
+.strategy-label {
+    font-size: 0.6rem;
+    font-weight: 800;
+    color: #94a3b8;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+}
+
+.strategy-msg-container {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    overflow: hidden;
+}
+
+.strategy-msg-text {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #f8fafc;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-style: italic;
+}
+
+.strategy-author {
+    font-size: 0.7rem;
+    color: #64748b;
+    white-space: nowrap;
+}
+
+@media (max-width: 1024px) {
+    .compact-strategy {
+        max-width: 200px;
+    }
+}

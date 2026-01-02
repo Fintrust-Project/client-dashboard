@@ -3,17 +3,17 @@
     align-items: center;
     background: rgba(30, 41, 59, 0.7);
     backdrop-filter: blur(8px);
-    padding: 0.4rem 1rem;
+    padding: 0.3rem 0.75rem;
     border-radius: 10px;
     border: 1px solid rgba(255, 255, 255, 0.1);
-    gap: 1.2rem;
+    gap: 1rem;
 }
 
 .index-item {
     display: flex;
     flex-direction: column;
     gap: 0.1rem;
-    min-width: 120px;
+    min-width: 100px;
 }
 
 .index-name {
