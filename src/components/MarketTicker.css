@@ -1,0 +1,67 @@
+.market-ticker {
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    padding: 0.5rem 1rem;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    gap: 1.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.index-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+}
+
+.index-name {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.index-price {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.index-change {
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+}
+
+.index-change.up {
+    color: #10b981;
+}
+
+.index-change.down {
+    color: #ef4444;
+}
+
+.index-divider {
+    width: 1px;
+    height: 24px;
+    background: rgba(0, 0, 0, 0.1);
+}
+
+/* Dark mode adjustments if needed */
+[data-theme='dark'] .market-ticker {
+    background: rgba(15, 23, 42, 0.6);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme='dark'] .index-price {
+    color: #f8fafc;
+}
+
+[data-theme='dark'] .index-divider {
+    background: rgba(255, 255, 255, 0.1);
+}

@@ -11,6 +11,7 @@ import PaymentVerifications from './PaymentVerifications'
 import StrategyManager from './StrategyManager'
 import StrategyBanner from './StrategyBanner'
 import IncomeSlips from './IncomeSlips'
+import MarketTicker from './MarketTicker'
 import '../css/Dashboard.css'
 
 const Dashboard = () => {
@@ -48,6 +49,7 @@ const Dashboard = () => {
       <div className="dashboard-content">
         <header className="dashboard-header">
           <h1>Welcome, {user?.username}</h1>
+          <MarketTicker />
         </header>
         <main className="dashboard-main">
           <StrategyBanner />
