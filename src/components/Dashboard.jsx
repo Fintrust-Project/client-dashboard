@@ -9,6 +9,7 @@ import UserManagement from './UserManagement'
 import TeamManagement from './TeamManagement'
 import PaymentVerifications from './PaymentVerifications'
 import StrategyManager from './StrategyManager'
+import StrategyBanner from './StrategyBanner'
 import '../css/Dashboard.css'
 
 const Dashboard = () => {
@@ -46,6 +47,7 @@ const Dashboard = () => {
           <h1>Welcome, {user?.username}</h1>
         </header>
         <main className="dashboard-main">
+          <StrategyBanner />
           {renderContent()}
         </main>
       </div>
