@@ -12,6 +12,7 @@ import StrategyManager from './StrategyManager'
 import StrategyBanner from './StrategyBanner'
 import IncomeSlips from './IncomeSlips'
 import MarketTicker from './MarketTicker'
+import TickerTape from './TickerTape'
 import '../css/Dashboard.css'
 
 const Dashboard = () => {
@@ -47,6 +48,7 @@ const Dashboard = () => {
     <div className="dashboard">
       <SidePanel activeView={activeView} setActiveView={setActiveView} />
       <div className="dashboard-content">
+        <TickerTape />
         <header className="dashboard-header">
           <h1>Welcome, {user?.username}</h1>
           <MarketTicker />
