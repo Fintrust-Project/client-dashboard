@@ -9,7 +9,9 @@ const IncomeChart = () => {
   const { user } = useAuth()
   const [period, setPeriod] = useState('weekly') // 'weekly' or 'monthly'
   const [payments, setPayments] = useState([])
+  const [profiles, setProfiles] = useState({})
   const [loading, setLoading] = useState(true)
+  const [breakdownView, setBreakdownView] = useState('agent') // 'agent' or 'team'
 
   useEffect(() => {
     fetchIncomeData()
@@ -40,6 +42,14 @@ const IncomeChart = () => {
       const { data, error } = await query
       if (error) throw error
       setPayments(data || [])
+
+      // Fetch profiles for names
+      const { data: profileData } = await supabase.from('profiles').select('id, username, role, manager_id')
+      if (profileData) {
+        const profileMap = {}
+        profileData.forEach(p => { profileMap[p.id] = p })
+        setProfiles(profileMap)
+      }
     } catch (err) {
       console.error('Error fetching income:', err.message)
     } finally {
@@ -107,6 +117,50 @@ const IncomeChart = () => {
     return payments.reduce((sum, p) => sum + parseFloat(p.amount || 0), 0)
   }, [payments])
 
+  const breakdownData = useMemo(() => {
+    if (!payments.length) return []
+
+    if (breakdownView === 'agent') {
+      const agentTotals = {}
+      payments.forEach(p => {
+        if (!agentTotals[p.user_id]) agentTotals[p.user_id] = 0
+        agentTotals[p.user_id] += parseFloat(p.amount || 0)
+      })
+
+      return Object.entries(agentTotals).map(([uid, total]) => ({
+        id: uid,
+        name: profiles[uid]?.username || 'Unknown',
+        role: profiles[uid]?.role || '-',
+        manager: profiles[profiles[uid]?.manager_id]?.username || '-',
+        amount: total
+      })).sort((a, b) => b.amount - a.amount)
+    } else {
+      // Team Breakdown (Aggregation by Manager)
+      const teamTotals = {}
+      payments.forEach(p => {
+        const agent = profiles[p.user_id]
+        if (!agent) return
+
+        // If agent is a manager, they are their own team leader effectively, or we group strictly by manager_id
+        // Let's group by "Team Lead" (manager_id). If manager_id is null, maybe they are the top admin or independent.
+        // Identify the Team Lead:
+        let leaderId = agent.manager_id
+        if (!leaderId && agent.role === 'manager') leaderId = agent.id // If self is manager
+        if (!leaderId) leaderId = 'unassigned'
+
+        if (!teamTotals[leaderId]) teamTotals[leaderId] = 0
+        teamTotals[leaderId] += parseFloat(p.amount || 0)
+      })
+
+      return Object.entries(teamTotals).map(([lid, total]) => ({
+        id: lid,
+        name: lid === 'unassigned' ? 'Unassigned/Admins' : (profiles[lid]?.username || 'Unknown'),
+        role: 'Team Lead',
+        amount: total
+      })).sort((a, b) => b.amount - a.amount)
+    }
+  }, [payments, profiles, breakdownView])
+
   if (loading) return <div className="income-chart-loading">Updating Financials...</div>
 
   return (
@@ -148,6 +202,54 @@ const IncomeChart = () => {
           )}
         </ResponsiveContainer>
       </div>
+
+      {(user?.role === 'admin' || user?.role === 'manager') && (
+        <div className="breakdown-section">
+          <div className="breakdown-header">
+            <h3>Performance Breakdown</h3>
+            <div className="view-toggles">
+              <button
+                className={breakdownView === 'agent' ? 'active' : ''}
+                onClick={() => setBreakdownView('agent')}
+              >
+                By Agent
+              </button>
+              {user.role === 'admin' && (
+                <button
+                  className={breakdownView === 'team' ? 'active' : ''}
+                  onClick={() => setBreakdownView('team')}
+                >
+                  By Team
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div className="breakdown-table-wrapper">
+            <table className="breakdown-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  {breakdownView === 'agent' && <th>Role</th>}
+                  {breakdownView === 'agent' && <th>Team Lead</th>}
+                  <th>Total Collection</th>
+                </tr>
+              </thead>
+              <tbody>
+                {breakdownData.map(item => (
+                  <tr key={item.id}>
+                    <td>{item.name}</td>
+                    {breakdownView === 'agent' && <td><span className={`role-badge role-${item.role}`}>{item.role}</span></td>}
+                    {breakdownView === 'agent' && <td>{item.manager}</td>}
+                    <td className="amount-cell">₹{item.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                  </tr>
+                ))}
+                {breakdownData.length === 0 && <tr><td colSpan="4" className="no-data">No data available</td></tr>}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
