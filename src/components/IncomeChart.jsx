@@ -181,28 +181,6 @@ const IncomeChart = () => {
         </div>
       </div>
 
-      <div className="chart-wrapper">
-        <ResponsiveContainer width="100%" height={350}>
-          {period === 'weekly' ? (
-            <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eee" />
-              <XAxis dataKey="period" axisLine={false} tickLine={false} />
-              <YAxis axisLine={false} tickLine={false} tickFormatter={(v) => `₹${v}`} />
-              <Tooltip formatter={(v) => `₹${parseFloat(v).toFixed(2)}`} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
-              <Line type="monotone" dataKey="income" stroke="#3b82f6" strokeWidth={3} dot={{ r: 4, fill: '#3b82f6' }} activeDot={{ r: 6 }} />
-            </LineChart>
-          ) : (
-            <BarChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eee" />
-              <XAxis dataKey="period" axisLine={false} tickLine={false} />
-              <YAxis axisLine={false} tickLine={false} />
-              <Tooltip formatter={(v) => `₹${parseFloat(v).toFixed(2)}`} />
-              <Bar dataKey="income" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          )}
-        </ResponsiveContainer>
-      </div>
-
       {(user?.role === 'admin' || user?.role === 'manager') && (
         <div className="breakdown-section">
           <div className="breakdown-header">
@@ -250,6 +228,28 @@ const IncomeChart = () => {
           </div>
         </div>
       )}
+
+      <div className="chart-wrapper">
+        <ResponsiveContainer width="100%" height={350}>
+          {period === 'weekly' ? (
+            <LineChart data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eee" />
+              <XAxis dataKey="period" axisLine={false} tickLine={false} />
+              <YAxis axisLine={false} tickLine={false} tickFormatter={(v) => `₹${v}`} />
+              <Tooltip formatter={(v) => `₹${parseFloat(v).toFixed(2)}`} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+              <Line type="monotone" dataKey="income" stroke="#3b82f6" strokeWidth={3} dot={{ r: 4, fill: '#3b82f6' }} activeDot={{ r: 6 }} />
+            </LineChart>
+          ) : (
+            <BarChart data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eee" />
+              <XAxis dataKey="period" axisLine={false} tickLine={false} />
+              <YAxis axisLine={false} tickLine={false} />
+              <Tooltip formatter={(v) => `₹${parseFloat(v).toFixed(2)}`} />
+              <Bar dataKey="income" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          )}
+        </ResponsiveContainer>
+      </div>
     </div>
   )
 }
