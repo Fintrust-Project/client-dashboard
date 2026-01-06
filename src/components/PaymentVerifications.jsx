@@ -188,7 +188,7 @@ const PaymentVerifications = () => {
 
             <div className="verifications-content">
                 {payments.length === 0 ? (
-                    <div className="no-verifications" style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8' }}>
+                    <div className="no-verifications" style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>
                         <p>No {activeTab} payments found.</p>
                     </div>
                 ) : (
