@@ -9,8 +9,10 @@ const PublicLanding = () => {
         <div className="landing-container">
             {/* Top Regulatory Banner */}
             <div className="regulatory-banner">
-                India Invest Karo is a not a SEBI Registered Research Analyst
-                Contact Information: Their official website is www.indiainvestkaro.com
+                <div className="regulatory-content">
+                    India Invest Karo is a not a SEBI Registered Research Analyst
+                    Contact Information: Their official website is www.indiainvestkaro.com
+                </div>
             </div>
 
             {/* Main Header */}
