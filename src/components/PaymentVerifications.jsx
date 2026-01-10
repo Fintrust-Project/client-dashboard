@@ -28,8 +28,22 @@ const PaymentVerifications = () => {
     }, [activeTab, currentPage])
 
     useEffect(() => {
-        setCurrentPage(1)
+        if (activeTab === 'pending') {
+            setCurrentPage(1)
+        }
     }, [activeTab])
+
+    // Effect for printing when data is ready
+    useEffect(() => {
+        if (printableReceiptData) {
+            const timer = setTimeout(() => {
+                window.print();
+                // We keep it for a bit so the print dialog sees it
+                setTimeout(() => setPrintableReceiptData(null), 3000);
+            }, 500);
+            return () => clearTimeout(timer);
+        }
+    }, [printableReceiptData])
 
     const loadData = async () => {
         try {
@@ -128,39 +142,20 @@ const PaymentVerifications = () => {
 
     const handleGenerateReceipt = (e) => {
         e.preventDefault()
-        // Prepare data for printing
-        const gstAmount = selectedPayment.amount * 0.18 // 18% of total sales as requested? Or 18% Tax INCLUDED? 
-        // User said: "deduct gst at bottom 18% of total sales" -> usually means Inclusive logic OR Breakdown.
-        // Let's assume Inclusive for a safe Receipt: Total = 118, Tax = 18.
-        // BUT user said "deduct".
-        // Let's show: Gross Amount = Total / 1.18 ?? No, simple usually better.
-        // Let's show: Total Amount Received. Breakdown: Taxable Value + GST.
-        // Calculation: 
-        // Taxable = Amount / 1.18
-        // GST = Amount - Taxable
-
-        // Wait, user said "gst deduction always 18% of total sales".
-        // If Sales = 100, GST = 18 ? 
-        // Let's take the input payment.amount as "Total Paid by Client".
-
         const totalAmount = parseFloat(selectedPayment.amount)
         const taxableValue = totalAmount / 1.18
         const gstValue = totalAmount - taxableValue
 
-        setPrintableReceiptData({
+        const dataToPrint = {
             ...selectedPayment,
             ...receiptForm,
             taxableValue,
             gstValue,
-            totalAmount
-        })
+            totalAmount: totalAmount
+        }
 
-        setShowReceiptModal(false) // Close modal after generating
-
-        // Give time for state to update then print
-        setTimeout(() => {
-            window.print()
-        }, 500)
+        setPrintableReceiptData(dataToPrint)
+        setShowReceiptModal(false)
     }
 
     return (
@@ -347,8 +342,8 @@ const PaymentVerifications = () => {
                 <div id="printable-receipt">
                     <div className="receipt-layout">
                         <div className="receipt-header">
-                            <h1>FINTRUST</h1>
-                            <p>Excellence in Financial Services</p>
+                            <h1>INDIA INVEST KARO</h1>
+                            <p>Empowering Your Financial Growth</p>
                             <h2 style={{ marginTop: '2rem', borderBottom: '1px solid #000', display: 'inline-block' }}>PAYMENT RECEIPT</h2>
                         </div>
 

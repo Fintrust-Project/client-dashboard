@@ -271,8 +271,8 @@ const IncomeSlips = () => {
                                 <div key={slip.userId} className="slip-card official-slip">
                                     <div className="official-header">
                                         <div className="company-branding">
-                                            <h1>FINTRUST</h1>
-                                            <p>Excellence in Financial Services</p>
+                                            <h1>INDIA INVEST KARO</h1>
+                                            <p>Empowering Your Financial Growth</p>
                                         </div>
                                         <div className="slip-meta">
                                             <h3>SALARY / INCOME SLIP</h3>

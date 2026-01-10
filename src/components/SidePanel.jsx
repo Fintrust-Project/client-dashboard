@@ -35,7 +35,7 @@ const SidePanel = ({ activeView, setActiveView }) => {
   return (
     <div className="side-panel">
       <div className="side-panel-header">
-        <h2>CMS</h2>
+        <h2>India Invest Karo</h2>
       </div>
       <nav className="side-panel-nav">
         {menuItems.map((item) => (
