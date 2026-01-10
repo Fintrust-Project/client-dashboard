@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider, useAuth } from './context/AuthContext'
 import Login from './components/Login'
 import Dashboard from './components/Dashboard'
+import PublicLanding from './components/PublicLanding'
 import './css/App.css'
 
 const PrivateRoute = ({ children }) => {
@@ -25,6 +26,7 @@ function App() {
     <AuthProvider>
       <Router>
         <Routes>
+          <Route path="/" element={<PublicLanding />} />
           <Route path="/login" element={<Login />} />
           <Route
             path="/dashboard"
@@ -34,7 +36,8 @@ function App() {
               </PrivateRoute>
             }
           />
-          <Route path="/" element={<Navigate to="/dashboard" />} />
+          {/* Catch all for deep links that need auth or redirect to home */}
+          <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </Router>
     </AuthProvider>
