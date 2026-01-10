@@ -36,13 +36,26 @@ const PaymentVerifications = () => {
     // Effect for printing when data is ready
     useEffect(() => {
         if (printableReceiptData) {
-            // Wait longer for DOM to be ready
+            const originalTitle = document.title;
+            document.title = `Receipt_${printableReceiptData.clients?.name || 'Client'}_${format(new Date(), 'yyyyMMdd')}`;
+
+            // Wait longer for DOM to be ready and styles to apply
             const timer = setTimeout(() => {
                 window.print();
-                // We keep it for a bit so the print dialog sees it
-                setTimeout(() => setPrintableReceiptData(null), 5000);
-            }, 1000);
-            return () => clearTimeout(timer);
+
+                // Cleanup after dialog closes
+                const cleanupTimer = setTimeout(() => {
+                    setPrintableReceiptData(null);
+                    document.title = originalTitle;
+                }, 3000);
+
+                return () => clearTimeout(cleanupTimer);
+            }, 1500);
+
+            return () => {
+                clearTimeout(timer);
+                document.title = originalTitle;
+            }
         }
     }, [printableReceiptData])
 
@@ -344,69 +357,81 @@ const PaymentVerifications = () => {
                     <div className="receipt-layout">
                         <div className="receipt-header">
                             <h1>INDIA INVEST KARO</h1>
-                            <p>Empowering Your Financial Growth</p>
-                            <h2 style={{ marginTop: '2rem', borderBottom: '1px solid #000', display: 'inline-block' }}>PAYMENT RECEIPT</h2>
+                            <p className="tagline">Empowering Your Financial Growth</p>
+                            <div className="receipt-title-box">
+                                <h2>PAYMENT RECEIPT</h2>
+                            </div>
                         </div>
 
                         <div className="receipt-body">
-                            <div className="receipt-row">
-                                <span className="receipt-label">Receipt Date:</span>
-                                <span className="receipt-value">{format(new Date(), 'dd MMMM yyyy')}</span>
-                            </div>
-                            <div className="receipt-row">
-                                <span className="receipt-label">Client Name:</span>
-                                <span className="receipt-value">{printableReceiptData.clients?.name}</span>
-                            </div>
-                            <div className="receipt-row">
-                                <span className="receipt-label">Mobile:</span>
-                                <span className="receipt-value">{printableReceiptData.clients?.mobile || 'N/A'}</span>
-                            </div>
-                            <div className="receipt-row">
-                                <span className="receipt-label">Payment Date:</span>
-                                <span className="receipt-value">{format(new Date(printableReceiptData.date), 'dd MMM yyyy')}</span>
-                            </div>
-                            <div className="receipt-row">
-                                <span className="receipt-label">Service Segment:</span>
-                                <span className="receipt-value">{printableReceiptData.segment}</span>
-                            </div>
-                            <div className="receipt-row">
-                                <span className="receipt-label">Service Duration:</span>
-                                <span className="receipt-value">
-                                    {format(new Date(printableReceiptData.startDate), 'dd MMM yyyy')} TO {format(new Date(printableReceiptData.endDate), 'dd MMM yyyy')}
-                                </span>
-                            </div>
-                            <div className="receipt-row">
-                                <span className="receipt-label">Agent:</span>
-                                <span className="receipt-value">{printableReceiptData.profiles?.username}</span>
+                            <div className="receipt-grid">
+                                <div className="receipt-row">
+                                    <span className="receipt-label">Receipt Date:</span>
+                                    <span className="receipt-value">{format(new Date(), 'dd MMMM yyyy')}</span>
+                                </div>
+                                <div className="receipt-row">
+                                    <span className="receipt-label">Client Name:</span>
+                                    <span className="receipt-value">{printableReceiptData.clients?.name || 'N/A'}</span>
+                                </div>
+                                <div className="receipt-row">
+                                    <span className="receipt-label">Mobile Number:</span>
+                                    <span className="receipt-value">{printableReceiptData.clients?.mobile || 'N/A'}</span>
+                                </div>
+                                <div className="receipt-row">
+                                    <span className="receipt-label">Payment Date:</span>
+                                    <span className="receipt-value">
+                                        {printableReceiptData.date ? format(new Date(printableReceiptData.date), 'dd MMM yyyy') : 'N/A'}
+                                    </span>
+                                </div>
+                                <div className="receipt-row">
+                                    <span className="receipt-label">Service Segment:</span>
+                                    <span className="receipt-value">{printableReceiptData.segment || 'N/A'}</span>
+                                </div>
+                                <div className="receipt-row">
+                                    <span className="receipt-label">Service Period:</span>
+                                    <span className="receipt-value">
+                                        {printableReceiptData.startDate ? format(new Date(printableReceiptData.startDate), 'dd MMM yyyy') : ''}
+                                        {' TO '}
+                                        {printableReceiptData.endDate ? format(new Date(printableReceiptData.endDate), 'dd MMM yyyy') : ''}
+                                    </span>
+                                </div>
+                                <div className="receipt-row">
+                                    <span className="receipt-label">Handled By (Agent):</span>
+                                    <span className="receipt-value">{printableReceiptData.profiles?.username || 'System'}</span>
+                                </div>
                             </div>
                         </div>
 
                         <table className="receipt-table">
                             <thead>
                                 <tr>
-                                    <th>Description</th>
+                                    <th>Description / Particulars</th>
                                     <th className="amount-right">Amount (INR)</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td>Gross Service Value</td>
-                                    <td className="amount-right">₹{printableReceiptData.taxableValue.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                                    <td>
+                                        <strong>Consultancy Services</strong><br />
+                                        <small>Segment: {printableReceiptData.segment}</small>
+                                    </td>
+                                    <td className="amount-right">₹{(printableReceiptData.taxableValue || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
                                 </tr>
                                 <tr>
-                                    <td>Add: GST @ 18%</td>
-                                    <td className="amount-right">₹{printableReceiptData.gstValue.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                                    <td className="tax-label">Integrated GST (IGST) @ 18% (Included)</td>
+                                    <td className="amount-right">₹{(printableReceiptData.gstValue || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
                                 </tr>
-                                <tr>
-                                    <td style={{ fontWeight: 'bold' }}>TOTAL AMOUNT RECEIVED</td>
-                                    <td className="amount-right" style={{ fontWeight: 'bold' }}>₹{(printableReceiptData.totalAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                                <tr className="total-row">
+                                    <td>TOTAL NET AMOUNT RECEIVED</td>
+                                    <td className="amount-right">₹{(printableReceiptData.totalAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
                                 </tr>
                             </tbody>
                         </table>
 
                         <div className="receipt-footer">
-                            <p>This is a computer-generated receipt.</p>
-                            <p>Thank you for your business!</p>
+                            <p className="thank-you">Thank you for choosing India Invest Karo!</p>
+                            <p className="computer-gen">This is a computer-generated receipt and does not require a physical signature.</p>
+                            <p className="website">www.indiainvestkaro.com</p>
                         </div>
                     </div>
                 </div>
