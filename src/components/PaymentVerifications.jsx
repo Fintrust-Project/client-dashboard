@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { format, differenceInDays } from 'date-fns'
 import { supabase } from '../supabase'
+import logo from '../assets/logo.png'
 import '../css/PaymentVerifications.css'
 
 const PaymentVerifications = () => {
@@ -366,6 +367,10 @@ const PaymentVerifications = () => {
             {printableReceiptData && createPortal(
                 <div id="printable-receipt" data-print-target="true">
                     <div className="receipt-layout">
+                        {/* Watermark Logo */}
+                        <div className="receipt-watermark">
+                            <img src={logo} alt="Watermark" />
+                        </div>
                         <div className="receipt-header">
                             <h1>INDIA INVEST KARO</h1>
                             <p className="tagline">Empowering Your Financial Growth</p>
