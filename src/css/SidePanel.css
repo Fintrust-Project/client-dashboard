@@ -21,12 +21,36 @@
 .side-panel-header {
   padding: 1rem 1.5rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .side-panel-header h2 {
   color: white;
   font-size: 1.25rem;
   font-weight: 700;
+  margin: 0;
+}
+
+.side-panel-toggle {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: #94a3b8;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 1.2rem;
+}
+
+.side-panel-toggle:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
 }
 
 .side-panel-nav {

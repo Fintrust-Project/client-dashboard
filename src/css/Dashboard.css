@@ -70,14 +70,18 @@
 .dashboard-header {
   background: var(--bg-secondary);
   padding: 0.25rem 1rem;
-  padding-left: 60px;
-  /* Space for the left toggle button */
   box-shadow: var(--card-shadow);
   border-bottom: 1px solid var(--border-color);
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 1rem;
+  transition: padding-left 0.3s ease-in-out;
+}
+
+.dashboard.sidebar-collapsed .dashboard-header {
+  padding-left: 60px;
+  /* Space for the floating ☰ button */
 }
 
 .dashboard-main {
@@ -118,7 +122,7 @@
   }
 
   .dashboard-header {
-    padding-left: 60px;
+    padding-left: 60px !important;
     padding-top: 10px;
     padding-bottom: 10px;
     flex-direction: column;

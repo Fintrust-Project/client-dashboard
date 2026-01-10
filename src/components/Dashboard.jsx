@@ -46,9 +46,11 @@ const Dashboard = () => {
 
   return (
     <div className={`dashboard ${sidebarOpen ? 'sidebar-open' : 'sidebar-collapsed'}`}>
-      <button className="sidebar-toggle-btn" onClick={() => setSidebarOpen(!sidebarOpen)}>
-        {sidebarOpen ? '✕' : '☰'}
-      </button>
+      {!sidebarOpen && (
+        <button className="sidebar-toggle-btn" onClick={() => setSidebarOpen(true)}>
+          ☰
+        </button>
+      )}
 
       {/* Sidebar Overlay */}
       <div
@@ -63,6 +65,7 @@ const Dashboard = () => {
           if (window.innerWidth <= 768) setSidebarOpen(false);
         }}
         isOpen={sidebarOpen}
+        onToggle={() => setSidebarOpen(!sidebarOpen)}
       />
 
       <div className="dashboard-content">
