@@ -10,10 +10,11 @@ const MarketTicker = () => {
 
     const fetchMarketData = async () => {
         try {
-            const proxy = 'https://api.allorigins.win/raw?url='
-            const niftyUrl = encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/%5ENSEI?interval=1m&range=1d')
-            const bankniftyUrl = encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/%5ENSEBANK?interval=1m&range=1d')
-            const sensexUrl = encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/%5EBSESN?interval=1m&range=1d')
+            // Using corsproxy.io which is more reliable for Indian origins
+            const proxy = 'https://corsproxy.io/?'
+            const niftyUrl = 'https://query1.finance.yahoo.com/v8/finance/chart/%5ENSEI?interval=1m&range=1d'
+            const bankniftyUrl = 'https://query1.finance.yahoo.com/v8/finance/chart/%5ENSEBANK?interval=1m&range=1d'
+            const sensexUrl = 'https://query1.finance.yahoo.com/v8/finance/chart/%5EBSESN?interval=1m&range=1d'
 
             const [niftyRes, bankRes, sensexRes] = await Promise.all([
                 fetch(`${proxy}${niftyUrl}`),
