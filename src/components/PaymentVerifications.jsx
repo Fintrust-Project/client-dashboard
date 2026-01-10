@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { format, differenceInDays } from 'date-fns'
 import { supabase } from '../supabase'
 import '../css/PaymentVerifications.css'
@@ -37,9 +38,10 @@ const PaymentVerifications = () => {
     useEffect(() => {
         if (printableReceiptData) {
             const originalTitle = document.title;
-            document.title = `Receipt_${printableReceiptData.clients?.name || 'Client'}_${format(new Date(), 'yyyyMMdd')}`;
+            // Use the flat property clientName we mapped in handleGenerateReceipt
+            document.title = `Receipt_${printableReceiptData.clientName || 'Client'}_${format(new Date(), 'yyyyMMdd')}`;
 
-            // Wait longer for DOM to be ready and styles to apply
+            // Wait for DOM to catch up
             const timer = setTimeout(() => {
                 window.print();
 
@@ -50,7 +52,7 @@ const PaymentVerifications = () => {
                 }, 3000);
 
                 return () => clearTimeout(cleanupTimer);
-            }, 1500);
+            }, 2000); // Increased wait to 2 seconds for slower systems
 
             return () => {
                 clearTimeout(timer);
@@ -360,8 +362,8 @@ const PaymentVerifications = () => {
                 </div>
             )}
 
-            {/* Printable Receipt Area (Only visible on Print) */}
-            {printableReceiptData && (
+            {/* Printable Receipt Area rendered via Portal to Body (for reliable printing) */}
+            {printableReceiptData && createPortal(
                 <div id="printable-receipt" data-print-target="true">
                     <div className="receipt-layout">
                         <div className="receipt-header">
@@ -437,7 +439,8 @@ const PaymentVerifications = () => {
                             <p className="website">www.indiainvestkaro.com</p>
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
         </div>
     )
