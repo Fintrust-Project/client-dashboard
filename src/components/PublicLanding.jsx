@@ -1,12 +1,45 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import TickerTape from './TickerTape'
 import logo from '../assets/logo.png'
 import '../css/PublicLanding.css'
 
 const PublicLanding = () => {
+    const [showNote, setShowNote] = useState(false);
+
+    useEffect(() => {
+        const timer = setTimeout(() => setShowNote(true), 1000);
+        return () => clearTimeout(timer);
+    }, []);
+
+    const NoteItem = ({ text }) => (
+        <div className="note-item">
+            <div className="check-icon">✓</div>
+            <div className="note-text">{text}</div>
+        </div>
+    );
+
     return (
         <div className="landing-container">
+            {/* Important Note Modal */}
+            {showNote && (
+                <div className="modal-overlay">
+                    <div className="note-modal">
+                        <button className="close-modal" onClick={() => setShowNote(false)}>×</button>
+                        <div className="modal-header">
+                            <h2>Important Note!</h2>
+                        </div>
+                        <div className="note-list">
+                            <NoteItem text="Our Official website is www.indiainvestkaro.com, E-Mail Id: support@indiainvestkaro.com; Our Official Support Contact No.: 9900691748, 8904528316" />
+                            <NoteItem text="We Do Not Offer Any Assured / Guaranteed / Profit Sharing / Demat Account Or Broking Services / Portfolio Management Services. Clients are never asked for their Banking Or Broking Credentials at India Invest Karo." />
+                            <NoteItem text="Do Not Share Your Credit Card / Debit Card / Netbanking Credentials / Demat Account Credentials With Any Of Our Employee. If you are being asked then inform us on 9900691748, 8904528316 or E-Mail us at support@indiainvestkaro.com" />
+                            <NoteItem text="We accept payments only in registered BANK ACCOUNT. Please check on 'Payment' in our website to get our Bank Details." />
+                            <NoteItem text="Investing In The Market Is Subject To Market Risk Hence Read All Our Disclaimer And T&C Carefully Before Investing." />
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Top Regulatory Banner */}
             <div className="regulatory-banner">
                 <div className="regulatory-content">

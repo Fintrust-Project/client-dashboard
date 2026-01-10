@@ -198,17 +198,120 @@
     }
 }
 
-/* Responsive */
+/* Modal Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    backdrop-filter: blur(5px);
+    padding: 20px;
+}
+
+.note-modal {
+    background: #ffffff;
+    width: 100%;
+    max-width: 650px;
+    border-radius: 16px;
+    position: relative;
+    padding: 40px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    animation: modalPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes modalPop {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.close-modal {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #f1f5f9;
+    border: none;
+    color: #64748b;
+    font-size: 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.close-modal:hover {
+    background: #e2e8f0;
+    color: #1e293b;
+    transform: rotate(90deg);
+}
+
+.modal-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.modal-header h2 {
+    color: #1e293b;
+    font-size: 1.8rem;
+    font-weight: 800;
+    margin: 0;
+}
+
+.note-list {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.note-item {
+    display: flex;
+    gap: 15px;
+    align-items: flex-start;
+}
+
+.check-icon {
+    width: 22px;
+    height: 22px;
+    background: #dcfce7;
+    color: #16a34a;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 12px;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.note-text {
+    color: #475569;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    font-weight: 500;
+}
+
 @media (max-width: 768px) {
-    .nav-links {
-        display: none;
+    .note-modal {
+        padding: 30px 20px;
     }
 
-    .hero-title {
-        font-size: 2.5rem;
-    }
-
-    .hero-section {
-        padding: 80px 20px;
+    .modal-header h2 {
+        font-size: 1.5rem;
     }
 }
