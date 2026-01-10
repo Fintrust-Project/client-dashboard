@@ -17,7 +17,7 @@ import '../css/Dashboard.css'
 const Dashboard = () => {
   const { user } = useAuth()
   const [activeView, setActiveView] = useState('dashboard')
-  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth > 768)
 
   const renderContent = () => {
     switch (activeView) {
@@ -45,19 +45,22 @@ const Dashboard = () => {
   }
 
   return (
-    <div className={`dashboard ${sidebarOpen ? 'sidebar-open' : ''}`}>
-      <button className="mobile-menu-btn" onClick={() => setSidebarOpen(!sidebarOpen)}>
+    <div className={`dashboard ${sidebarOpen ? 'sidebar-open' : 'sidebar-collapsed'}`}>
+      <button className="sidebar-toggle-btn" onClick={() => setSidebarOpen(!sidebarOpen)}>
         {sidebarOpen ? '✕' : '☰'}
       </button>
 
-      {/* Mobile Overlay */}
-      {sidebarOpen && <div className="mobile-overlay" onClick={() => setSidebarOpen(false)}></div>}
+      {/* Sidebar Overlay */}
+      <div
+        className={`sidebar-overlay ${sidebarOpen ? 'visible' : ''}`}
+        onClick={() => setSidebarOpen(false)}
+      ></div>
 
       <SidePanel
         activeView={activeView}
         setActiveView={(view) => {
           setActiveView(view);
-          setSidebarOpen(false); // Auto-close on mobile after selection
+          if (window.innerWidth <= 768) setSidebarOpen(false);
         }}
         isOpen={sidebarOpen}
       />
