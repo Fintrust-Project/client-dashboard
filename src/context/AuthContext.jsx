@@ -75,8 +75,18 @@ export const AuthProvider = ({ children }) => {
     }
 
     if (data.user) {
-      // Explicitly wait for profile fetching so that 'user' state is updated
-      // before the component receives the 'success' result and navigates.
+      // Fetch profile to check if user is deleted
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('status')
+        .eq('id', data.user.id)
+        .single()
+
+      if (profile?.status === 'deleted') {
+        await supabase.auth.signOut()
+        return { success: false, message: 'This account has been deactivated.' }
+      }
+
       await fetchProfile(data.user)
     }
 
