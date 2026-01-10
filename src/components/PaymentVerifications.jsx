@@ -156,16 +156,25 @@ const PaymentVerifications = () => {
 
     const handleGenerateReceipt = (e) => {
         e.preventDefault()
-        const totalAmount = parseFloat(selectedPayment.amount)
-        const taxableValue = totalAmount / 1.18
-        const gstValue = totalAmount - taxableValue
 
+        if (!selectedPayment) return
+
+        const amount = parseFloat(selectedPayment.amount || 0)
+        const taxable = amount / 1.18
+        const gst = amount - taxable
+
+        // Explicitly map all required data for the receipt
         const dataToPrint = {
-            ...selectedPayment,
-            ...receiptForm,
-            taxableValue,
-            gstValue,
-            totalAmount: totalAmount
+            receiptDate: format(new Date(), 'dd MMMM yyyy'),
+            clientName: selectedPayment.clients?.name || 'N/A',
+            clientMobile: selectedPayment.clients?.mobile || 'N/A',
+            paymentDate: selectedPayment.date ? format(new Date(selectedPayment.date), 'dd MMM yyyy') : 'N/A',
+            segment: receiptForm.segment,
+            servicePeriod: `${format(new Date(receiptForm.startDate), 'dd MMM yyyy')} TO ${format(new Date(receiptForm.endDate), 'dd MMM yyyy')}`,
+            agentName: selectedPayment.profiles?.username || 'Admin',
+            grossAmount: taxable,
+            gstAmount: gst,
+            totalAmount: amount
         }
 
         setPrintableReceiptData(dataToPrint)
@@ -367,37 +376,31 @@ const PaymentVerifications = () => {
                             <div className="receipt-grid">
                                 <div className="receipt-row">
                                     <span className="receipt-label">Receipt Date:</span>
-                                    <span className="receipt-value">{format(new Date(), 'dd MMMM yyyy')}</span>
+                                    <span className="receipt-value">{printableReceiptData.receiptDate}</span>
                                 </div>
                                 <div className="receipt-row">
                                     <span className="receipt-label">Client Name:</span>
-                                    <span className="receipt-value">{printableReceiptData.clients?.name || 'N/A'}</span>
+                                    <span className="receipt-value">{printableReceiptData.clientName}</span>
                                 </div>
                                 <div className="receipt-row">
                                     <span className="receipt-label">Mobile Number:</span>
-                                    <span className="receipt-value">{printableReceiptData.clients?.mobile || 'N/A'}</span>
+                                    <span className="receipt-value">{printableReceiptData.clientMobile}</span>
                                 </div>
                                 <div className="receipt-row">
                                     <span className="receipt-label">Payment Date:</span>
-                                    <span className="receipt-value">
-                                        {printableReceiptData.date ? format(new Date(printableReceiptData.date), 'dd MMM yyyy') : 'N/A'}
-                                    </span>
+                                    <span className="receipt-value">{printableReceiptData.paymentDate}</span>
                                 </div>
                                 <div className="receipt-row">
                                     <span className="receipt-label">Service Segment:</span>
-                                    <span className="receipt-value">{printableReceiptData.segment || 'N/A'}</span>
+                                    <span className="receipt-value">{printableReceiptData.segment}</span>
                                 </div>
                                 <div className="receipt-row">
                                     <span className="receipt-label">Service Period:</span>
-                                    <span className="receipt-value">
-                                        {printableReceiptData.startDate ? format(new Date(printableReceiptData.startDate), 'dd MMM yyyy') : ''}
-                                        {' TO '}
-                                        {printableReceiptData.endDate ? format(new Date(printableReceiptData.endDate), 'dd MMM yyyy') : ''}
-                                    </span>
+                                    <span className="receipt-value">{printableReceiptData.servicePeriod}</span>
                                 </div>
                                 <div className="receipt-row">
-                                    <span className="receipt-label">Handled By (Agent):</span>
-                                    <span className="receipt-value">{printableReceiptData.profiles?.username || 'System'}</span>
+                                    <span className="receipt-label">Handled By:</span>
+                                    <span className="receipt-value">{printableReceiptData.agentName}</span>
                                 </div>
                             </div>
                         </div>
@@ -415,15 +418,15 @@ const PaymentVerifications = () => {
                                         <strong>Consultancy Services</strong><br />
                                         <small>Segment: {printableReceiptData.segment}</small>
                                     </td>
-                                    <td className="amount-right">₹{(printableReceiptData.taxableValue || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                                    <td className="amount-right">₹{printableReceiptData.grossAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
                                 </tr>
                                 <tr>
                                     <td className="tax-label">Integrated GST (IGST) @ 18% (Included)</td>
-                                    <td className="amount-right">₹{(printableReceiptData.gstValue || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                                    <td className="amount-right">₹{printableReceiptData.gstAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
                                 </tr>
                                 <tr className="total-row">
                                     <td>TOTAL NET AMOUNT RECEIVED</td>
-                                    <td className="amount-right">₹{(printableReceiptData.totalAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                                    <td className="amount-right">₹{printableReceiptData.totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
                                 </tr>
                             </tbody>
                         </table>
