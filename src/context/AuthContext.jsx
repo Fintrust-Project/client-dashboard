@@ -47,6 +47,11 @@ export const AuthProvider = ({ children }) => {
         .single()
 
       if (profile) {
+        if (profile.status === 'deleted') {
+          await supabase.auth.signOut()
+          setUser(null)
+          return
+        }
         setUser({ ...authUser, ...profile }) // Merge Auth data with Profile data
       } else {
         // Fallback if no profile yet

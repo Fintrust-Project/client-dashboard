@@ -47,6 +47,7 @@ const UserManagement = () => {
         .from('profiles')
         .select('*', { count: 'exact' })
         .neq('username', 'admin123@gmail.com')
+        .neq('status', 'deleted')
         .order('username', { ascending: true })
         .range(from, to)
 
@@ -147,16 +148,18 @@ const UserManagement = () => {
     }
 
     try {
-      const { data, error } = await supabase.rpc('delete_user_rpc', { user_id: userId })
+      const { error } = await supabase
+        .from('profiles')
+        .update({ status: 'deleted' })
+        .eq('id', userId)
 
       if (error) throw error
-      if (data && data.error) throw new Error(data.error)
 
-      setMessage({ type: 'success', text: 'User deleted successfully!' })
+      setMessage({ type: 'success', text: 'User account deactivated successfully!' })
       loadUsers()
       setTimeout(() => setMessage({ type: '', text: '' }), 3000)
     } catch (error) {
-      alert('Error: ' + error.message)
+      alert('Error deactivating user: ' + error.message)
     }
   }
 
