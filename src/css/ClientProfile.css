@@ -450,3 +450,27 @@
 .add-payment-button {
   margin-top: 1.5rem;
 }
+@media (max-width: 600px) {
+  .profile-header {
+    padding: 1rem;
+  }
+
+  .profile-content {
+    padding: 1rem;
+  }
+
+  .payment-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .split-row {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+
+  .remove-split-btn {
+    width: 100%;
+  }
+}

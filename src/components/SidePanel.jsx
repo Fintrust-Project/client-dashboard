@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import '../css/SidePanel.css'
 
-const SidePanel = ({ activeView, setActiveView }) => {
+const SidePanel = ({ activeView, setActiveView, isOpen }) => {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
 
@@ -33,7 +33,7 @@ const SidePanel = ({ activeView, setActiveView }) => {
   }
 
   return (
-    <div className="side-panel">
+    <div className={`side-panel ${isOpen ? 'show' : ''}`}>
       <div className="side-panel-header">
         <h2>India Invest Karo</h2>
       </div>

@@ -17,6 +17,7 @@ import '../css/Dashboard.css'
 const Dashboard = () => {
   const { user } = useAuth()
   const [activeView, setActiveView] = useState('dashboard')
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const renderContent = () => {
     switch (activeView) {
@@ -44,8 +45,23 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="dashboard">
-      <SidePanel activeView={activeView} setActiveView={setActiveView} />
+    <div className={`dashboard ${sidebarOpen ? 'sidebar-open' : ''}`}>
+      <button className="mobile-menu-btn" onClick={() => setSidebarOpen(!sidebarOpen)}>
+        {sidebarOpen ? '✕' : '☰'}
+      </button>
+
+      {/* Mobile Overlay */}
+      {sidebarOpen && <div className="mobile-overlay" onClick={() => setSidebarOpen(false)}></div>}
+
+      <SidePanel
+        activeView={activeView}
+        setActiveView={(view) => {
+          setActiveView(view);
+          setSidebarOpen(false); // Auto-close on mobile after selection
+        }}
+        isOpen={sidebarOpen}
+      />
+
       <div className="dashboard-content">
         <TickerTape />
         <header className="dashboard-header">

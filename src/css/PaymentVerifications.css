@@ -524,3 +524,30 @@
         margin: 10mm;
     }
 }
+@media (max-width: 768px) {
+    .tabs-container {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .tab-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .payment-card {
+        padding: 1rem;
+    }
+
+    .payment-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .action-group {
+        flex-direction: column;
+    }
+
+    .action-group button {
+        width: 100%;
+    }
+}

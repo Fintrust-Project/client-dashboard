@@ -270,3 +270,19 @@
         page-break-after: always;
     }
 }
+@media (max-width: 768px) {
+  .slips-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .filters-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .slips-grid {
+    grid-template-columns: 1fr;
+  }
+}

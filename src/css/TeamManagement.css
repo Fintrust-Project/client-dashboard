@@ -109,3 +109,14 @@
 .summary-card .amount {
   font-size: 1.75rem;
 }
+@media (max-width: 768px) {
+  .team-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .team-grid {
+    grid-template-columns: 1fr;
+  }
+}
