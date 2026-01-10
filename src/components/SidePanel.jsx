@@ -1,15 +1,16 @@
+'use client'
 import React from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '../context/AuthContext'
 import '../css/SidePanel.css'
 
 const SidePanel = ({ activeView, setActiveView, isOpen, onToggle }) => {
   const { user, logout } = useAuth()
-  const navigate = useNavigate()
+  const router = useRouter()
 
   const handleLogout = () => {
     logout()
-    navigate('/')
+    router.push('/')
   }
 
   const menuItems = [

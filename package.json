@@ -6,17 +6,22 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.89.0",
     "date-fns": "^2.30.0",
+    "next": "^16.1.1",
     "papaparse": "^5.4.1",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
     "react-router-dom": "^6.20.0",
     "recharts": "^2.10.3",
     "xlsx": "^0.18.5"
   },
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "vite:dev": "vite",
+    "vite:build": "vite build",
+    "vite:preview": "vite preview"
   },
   "devDependencies": {
     "@types/react": "^18.2.43",

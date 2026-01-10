@@ -1,11 +1,14 @@
+'use client'
 import React, { useState, useEffect, useRef } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import TickerTape from './TickerTape'
-import logo from '../assets/logo.png'
 import '../css/PublicLanding.css'
 
+const logo = '/logo.png' // Move logo to public or handle import
+
 const PublicLanding = () => {
-    const navigate = useNavigate();
+    const router = useRouter();
     const [showNote, setShowNote] = useState(false);
     const [currentSlide, setCurrentSlide] = useState(0);
     const [clickCount, setClickCount] = useState(0);
@@ -42,7 +45,7 @@ const PublicLanding = () => {
         if (now - lastClickTime.current < 500) {
             const newCount = clickCount + 1;
             if (newCount >= 5) {
-                navigate('/login');
+                router.push('/login');
             }
             setClickCount(newCount);
         } else {

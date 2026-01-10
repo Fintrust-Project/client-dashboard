@@ -1,4 +1,5 @@
-import React, { useState } from 'react'
+'use client'
+import React, { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
 import SidePanel from './SidePanel'
 import IncomeChart from './IncomeChart'
@@ -17,7 +18,11 @@ import '../css/Dashboard.css'
 const Dashboard = () => {
   const { user } = useAuth()
   const [activeView, setActiveView] = useState('dashboard')
-  const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth > 768)
+  const [sidebarOpen, setSidebarOpen] = useState(true)
+
+  useEffect(() => {
+    setSidebarOpen(window.innerWidth > 768)
+  }, [])
 
   const renderContent = () => {
     switch (activeView) {

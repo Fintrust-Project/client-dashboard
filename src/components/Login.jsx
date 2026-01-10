@@ -1,5 +1,6 @@
+'use client'
 import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '../context/AuthContext'
 import '../css/Login.css'
 
@@ -8,7 +9,7 @@ const Login = () => {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const { login } = useAuth()
-  const navigate = useNavigate()
+  const router = useRouter()
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -16,7 +17,7 @@ const Login = () => {
 
     const result = await login(email, password)
     if (result.success) {
-      navigate('/dashboard')
+      router.push('/dashboard')
     } else {
       setError(result.message || 'Invalid credentials')
     }
