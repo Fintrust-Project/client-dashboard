@@ -1,16 +1,33 @@
-import React, { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import React, { useState, useEffect, useRef } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import TickerTape from './TickerTape'
 import logo from '../assets/logo.png'
 import '../css/PublicLanding.css'
 
 const PublicLanding = () => {
+    const navigate = useNavigate();
     const [showNote, setShowNote] = useState(false);
+    const [clickCount, setClickCount] = useState(0);
+    const lastClickTime = useRef(0);
 
     useEffect(() => {
         const timer = setTimeout(() => setShowNote(true), 1000);
         return () => clearTimeout(timer);
     }, []);
+
+    const handleBannerClick = () => {
+        const now = Date.now();
+        if (now - lastClickTime.current < 500) {
+            const newCount = clickCount + 1;
+            if (newCount >= 5) {
+                navigate('/login');
+            }
+            setClickCount(newCount);
+        } else {
+            setClickCount(1);
+        }
+        lastClickTime.current = now;
+    };
 
     const NoteItem = ({ text }) => (
         <div className="note-item">
@@ -41,7 +58,7 @@ const PublicLanding = () => {
             )}
 
             {/* Top Regulatory Banner */}
-            <div className="regulatory-banner">
+            <div className="regulatory-banner" onClick={handleBannerClick} style={{ cursor: 'pointer' }}>
                 <div className="regulatory-content">
                     India Invest Karo is a not a SEBI Registered Research Analyst
                     Contact Information: Their official website is www.indiainvestkaro.com
