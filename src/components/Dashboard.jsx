@@ -11,7 +11,6 @@ import PaymentVerifications from './PaymentVerifications'
 import StrategyManager from './StrategyManager'
 import StrategyBanner from './StrategyBanner'
 import IncomeSlips from './IncomeSlips'
-import MarketTicker from './MarketTicker'
 import TickerTape from './TickerTape'
 import '../css/Dashboard.css'
 
@@ -51,7 +50,6 @@ const Dashboard = () => {
         <TickerTape />
         <header className="dashboard-header">
           <StrategyBanner />
-          <MarketTicker />
         </header>
         <main className="dashboard-main">
           {renderContent()}
@@ -62,4 +60,3 @@ const Dashboard = () => {
 }
 
 export default Dashboard
-
