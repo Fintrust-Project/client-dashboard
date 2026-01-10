@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './context/AuthContext'
 import Login from './components/Login'
 import Dashboard from './components/Dashboard'
 import PublicLanding from './components/PublicLanding'
+import NotFound from './components/NotFound'
 import './css/App.css'
 
 const PrivateRoute = ({ children }) => {
@@ -36,8 +37,8 @@ function App() {
               </PrivateRoute>
             }
           />
-          {/* Catch all for deep links that need auth or redirect to home */}
-          <Route path="*" element={<Navigate to="/" />} />
+          {/* Catch all for unknown URLs */}
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>
     </AuthProvider>

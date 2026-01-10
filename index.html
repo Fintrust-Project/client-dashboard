@@ -10,6 +10,12 @@
     content="indiainvest, investkaro.com, indiainvestkaro, finance solution, finstocksolution.com, finance, stock market, investment analysis, India Invest Karo" />
   <meta name="author" content="India Invest Karo" />
 
+  <!-- Preload Critical Assets -->
+  <link rel="preload" href="/favicon.png" as="image" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://www.indiainvestkaro.com/" />
@@ -25,6 +31,33 @@
   <meta property="twitter:description"
     content="Comprehensive financial solutions and market research for smarter investing." />
   <meta property="twitter:image" content="/favicon.png" />
+
+  <!-- Structured Data (JSON-LD) for SEO -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "India Invest Karo",
+    "url": "https://www.indiainvestkaro.com/",
+    "logo": "https://www.indiainvestkaro.com/favicon.png",
+    "description": "Comprehensive financial solutions and market research for smarter investing.",
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "telephone": "+91 9206915470",
+      "contactType": "customer service",
+      "email": "support@indiainvestkaro.com"
+    }
+  }
+  </script>
+
+  <!-- Google Analytics Placeholder (Update with your Tracking ID) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-XXXXXXXXXX');
+  </script>
 
   <link rel="icon" type="image/png" href="/favicon.png" />
   <title>India Invest Karo - Solutions to make life easier</title>

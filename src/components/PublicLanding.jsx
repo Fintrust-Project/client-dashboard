@@ -111,9 +111,9 @@ const PublicLanding = () => {
                     <h1 className="hero-title">
                         {slides[currentSlide].title}
                     </h1>
-                    <p className="hero-subtitle">
+                    <h2 className="hero-subtitle">
                         {slides[currentSlide].subtitle}
-                    </p>
+                    </h2>
                     <button className="cta-button">
                         Enquiry? Click here!
                     </button>
