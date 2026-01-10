@@ -155,6 +155,8 @@ const PaymentVerifications = () => {
             totalAmount
         })
 
+        setShowReceiptModal(false) // Close modal after generating
+
         // Give time for state to update then print
         setTimeout(() => {
             window.print()

@@ -278,6 +278,7 @@ const ClientProfile = ({ client, onClose }) => {
                   <option value="waiting">Waiting</option>
                   <option value="trader">Trader</option>
                   <option value="not-trader">Not Trader</option>
+                  <option value="DEMO_CALL">Demo Call</option>
                 </select>
               </div>
               <div className="form-group">

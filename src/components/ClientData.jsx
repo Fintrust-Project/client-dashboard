@@ -44,13 +44,14 @@ const ClientData = () => {
   const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'desc' })
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState(10)
+  const [searchTerm, setSearchTerm] = useState('')
 
   useEffect(() => {
     if (user) {
       loadData()
       if (user.role === 'admin') loadUsers()
     }
-  }, [user, viewMode, currentPage, itemsPerPage, filterStatus, filterSegment, sortConfig])
+  }, [user, viewMode, currentPage, itemsPerPage, filterStatus, filterSegment, sortConfig, searchTerm])
 
   const loadUsers = async () => {
     try {
@@ -97,6 +98,10 @@ const ClientData = () => {
           query = query.eq('segment', filterSegment)
         }
 
+        if (searchTerm) {
+          query = query.or(`name.ilike.%${searchTerm}%,mobile.ilike.%${searchTerm}%`, { foreignTable: 'clients' })
+        }
+
         // Apply sorting and pagination
         const { data: res, error, count } = await query
           .order(sortConfig.key === 'date' ? 'assignment_date' : sortConfig.key, {
@@ -130,6 +135,10 @@ const ClientData = () => {
           .from('clients')
           .select('*', { count: 'exact' })
           .eq('is_assigned', false)
+
+        if (searchTerm) {
+          query = query.or(`name.ilike.%${searchTerm}%,mobile.ilike.%${searchTerm}%`)
+        }
 
         // Apply sorting and pagination
         const { data: res, error, count } = await query
@@ -441,6 +450,17 @@ const ClientData = () => {
       {/* Filters Toolbar */}
       <div className="filters-toolbar">
         <div className="filter-group">
+          <label>Search:</label>
+          <input
+            type="text"
+            placeholder="Name or Mobile..."
+            value={searchTerm}
+            onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
+            style={{ minWidth: '200px' }}
+          />
+        </div>
+
+        <div className="filter-group">
           <label>Status:</label>
           <select value={filterStatus} onChange={(e) => { setFilterStatus(e.target.value); setCurrentPage(1); }}>
             <option value="all">All Status</option>
@@ -453,6 +473,7 @@ const ClientData = () => {
             <option value="call not received">Call not received</option>
             <option value="waiting">Waiting</option>
             <option value="trader">Trader</option>
+            <option value="DEMO_CALL">Demo Call</option>
           </select>
         </div>
 
@@ -545,6 +566,7 @@ const ClientData = () => {
                   <option value="switch off">Switch off</option>
                   <option value="call not received">Call not received</option>
                   <option value="trader">Trader</option>
+                  <option value="DEMO_CALL">Demo Call</option>
                 </select>
               </div>
               <div className="form-group">
@@ -627,6 +649,7 @@ const ClientData = () => {
                           <option value="waiting">Waiting</option>
                           <option value="trader">Trader</option>
                           <option value="not-trader">Not Trader</option>
+                          <option value="DEMO_CALL">Demo Call</option>
                         </select>
                       </td>
                       <td><span className="segment-badge">{item.segment || 'Cash'}</span></td>

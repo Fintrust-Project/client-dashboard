@@ -5,6 +5,7 @@ import { supabase } from '../supabase'
 import '../css/UserManagement.css'
 
 const UserManagement = () => {
+  const { user } = useAuth()
   const [users, setUsers] = useState([])
   const [managers, setManagers] = useState([])
   const [showAddForm, setShowAddForm] = useState(false)
@@ -45,6 +46,7 @@ const UserManagement = () => {
       const { data: profiles, error, count } = await supabase
         .from('profiles')
         .select('*', { count: 'exact' })
+        .neq('username', 'admin123@gmail.com')
         .order('username', { ascending: true })
         .range(from, to)
 
@@ -135,7 +137,7 @@ const UserManagement = () => {
   }
 
   const handleDeleteUser = async (userId, username) => {
-    if (userId === user.id) {
+    if (userId === user?.id) {
       alert("You cannot delete your own account.")
       return
     }
@@ -172,7 +174,6 @@ const UserManagement = () => {
   const handleCloseModal = () => {
     setShowAddForm(false)
     setIsEditing(false)
-    setEditingId(null)
     setEditingId(null)
     setFormData({ email: '', password: '', role: 'user', managerId: '' })
     setMessage({ type: '', text: '' })
