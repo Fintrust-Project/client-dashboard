@@ -245,57 +245,28 @@
     }
 
     body * {
-        visibility: hidden;
+        visibility: hidden !important;
     }
 
     .income-slips-container,
     .income-slips-container * {
-        visibility: visible;
+        visibility: visible !important;
     }
 
     .income-slips-container {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 100%;
-        margin: 0;
-        padding: 0;
-        box-shadow: none;
-        background: white;
+        display: block !important;
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: white !important;
     }
 
     .slip-card {
         border: 2px solid #000;
-        margin: 0;
+        margin-bottom: 30px;
         page-break-after: always;
-        /* Force one slip per page */
-        min-height: 90vh;
-    }
-
-    .official-header {
-        background: #eee !important;
-        border-bottom: 2px solid #000;
-        -webkit-print-color-adjust: exact;
-    }
-
-    .slip-table th {
-        background: #000 !important;
-        color: white !important;
-        -webkit-print-color-adjust: exact;
-    }
-
-    .slip-table td,
-    .slip-table th {
-        border: 1px solid #000;
-    }
-
-    .controls-area,
-    .slips-header {
-        display: none !important;
-    }
-
-    .net-pay-row .amount-cell {
-        background: #ddd !important;
-        -webkit-print-color-adjust: exact;
     }
 }

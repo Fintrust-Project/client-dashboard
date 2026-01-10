@@ -36,11 +36,12 @@ const PaymentVerifications = () => {
     // Effect for printing when data is ready
     useEffect(() => {
         if (printableReceiptData) {
+            // Wait longer for DOM to be ready
             const timer = setTimeout(() => {
                 window.print();
                 // We keep it for a bit so the print dialog sees it
-                setTimeout(() => setPrintableReceiptData(null), 3000);
-            }, 500);
+                setTimeout(() => setPrintableReceiptData(null), 5000);
+            }, 1000);
             return () => clearTimeout(timer);
         }
     }, [printableReceiptData])
@@ -339,7 +340,7 @@ const PaymentVerifications = () => {
 
             {/* Printable Receipt Area (Only visible on Print) */}
             {printableReceiptData && (
-                <div id="printable-receipt">
+                <div id="printable-receipt" data-print-target="true">
                     <div className="receipt-layout">
                         <div className="receipt-header">
                             <h1>INDIA INVEST KARO</h1>
@@ -398,7 +399,7 @@ const PaymentVerifications = () => {
                                 </tr>
                                 <tr>
                                     <td style={{ fontWeight: 'bold' }}>TOTAL AMOUNT RECEIVED</td>
-                                    <td className="amount-right" style={{ fontWeight: 'bold' }}>₹{printableReceiptData.totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                                    <td className="amount-right" style={{ fontWeight: 'bold' }}>₹{(printableReceiptData.totalAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
                                 </tr>
                             </tbody>
                         </table>
