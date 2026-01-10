@@ -100,13 +100,14 @@
 /* Hero Section */
 .hero-section {
     position: relative;
-    padding: 120px 5%;
+    padding: 60px 5%;
     background: var(--primary-gradient);
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
-    min-height: 600px;
+    height: 650px;
+    /* Fixed height for all slides */
     justify-content: center;
 }
 
@@ -169,7 +170,16 @@
     background: #db2777;
 }
 
-/* Carousel Indicators */
+/* Bottom Ticker Footer */
+.landing-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background: #000;
+}
+
 .carousel-indicators {
     display: flex;
     justify-content: center;
@@ -367,8 +377,9 @@
     }
 
     .hero-section {
-        padding: 60px 20px;
-        min-height: 500px;
+        padding: 40px 20px;
+        height: 550px;
+        /* Fixed height for mobile */
     }
 
     .cta-button {
