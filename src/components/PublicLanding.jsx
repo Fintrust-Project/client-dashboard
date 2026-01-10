@@ -30,9 +30,9 @@ const PublicLanding = () => {
                             <h2>Important Note!</h2>
                         </div>
                         <div className="note-list">
-                            <NoteItem text="Our Official website is www.indiainvestkaro.com, E-Mail Id: support@indiainvestkaro.com; Our Official Support Contact No.: 9900691748, 8904528316" />
+                            <NoteItem text="Our Official website is www.indiainvestkaro.com, E-Mail Id: support@indiainvestkaro.com; Our Official Support Contact No.: +91 9206915470" />
                             <NoteItem text="We Do Not Offer Any Assured / Guaranteed / Profit Sharing / Demat Account Or Broking Services / Portfolio Management Services. Clients are never asked for their Banking Or Broking Credentials at India Invest Karo." />
-                            <NoteItem text="Do Not Share Your Credit Card / Debit Card / Netbanking Credentials / Demat Account Credentials With Any Of Our Employee. If you are being asked then inform us on 9900691748, 8904528316 or E-Mail us at support@indiainvestkaro.com" />
+                            <NoteItem text="Do Not Share Your Credit Card / Debit Card / Netbanking Credentials / Demat Account Credentials With Any Of Our Employee. If you are being asked then inform us on +91 9206915470 or E-Mail us at support@indiainvestkaro.com" />
                             <NoteItem text="We accept payments only in registered BANK ACCOUNT. Please check on 'Payment' in our website to get our Bank Details." />
                             <NoteItem text="Investing In The Market Is Subject To Market Risk Hence Read All Our Disclaimer And T&C Carefully Before Investing." />
                         </div>
