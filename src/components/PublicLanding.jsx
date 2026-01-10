@@ -79,7 +79,6 @@ const PublicLanding = () => {
                     <a href="#" className="nav-item">Payment</a>
                     <a href="#" className="nav-item">Complaints</a>
                     <a href="#" className="nav-item">Contact Us</a>
-                    <Link to="/login" className="nav-item">Login</Link>
                 </nav>
             </header>
 
