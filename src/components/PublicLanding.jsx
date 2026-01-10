@@ -7,12 +7,34 @@ import '../css/PublicLanding.css'
 const PublicLanding = () => {
     const navigate = useNavigate();
     const [showNote, setShowNote] = useState(false);
+    const [currentSlide, setCurrentSlide] = useState(0);
     const [clickCount, setClickCount] = useState(0);
     const lastClickTime = useRef(0);
 
+    const slides = [
+        {
+            title: <>Trusted Research <br /> Driven Analysis.</>,
+            subtitle: <>Get comprehensive market insights and research-backed data to <br /> make informed decisions in the ever-evolving stock market.</>
+        },
+        {
+            title: <>Your gateway to <br /> smart investing starts here.</>,
+            subtitle: <>Discover the potential of stock trading with our user-friendly <br /> platform designed for both beginners and seasoned investors alike.</>
+        },
+        {
+            title: <>Master the Markets <br /> with India Invest Karo.</>,
+            subtitle: <>Access expert tools and real-time updates to navigate <br /> market volatility and unlock your financial potential.</>
+        }
+    ];
+
     useEffect(() => {
-        const timer = setTimeout(() => setShowNote(true), 1000);
-        return () => clearTimeout(timer);
+        const modalTimer = setTimeout(() => setShowNote(true), 1000);
+        const slideTimer = setInterval(() => {
+            setCurrentSlide((prev) => (prev + 1) % slides.length);
+        }, 5000);
+        return () => {
+            clearTimeout(modalTimer);
+            clearInterval(slideTimer);
+        };
     }, []);
 
     const handleBannerClick = () => {
@@ -85,23 +107,26 @@ const PublicLanding = () => {
             {/* Hero Section */}
             <section className="hero-section">
                 <div className="hero-overlay"></div>
-                <div className="hero-content">
+                <div className="hero-content" key={currentSlide}>
                     <h1 className="hero-title">
-                        We bring solutions <br />
-                        to make life easier.
+                        {slides[currentSlide].title}
                     </h1>
                     <p className="hero-subtitle">
-                        Explore our stock trading website for insights and tools <br />
-                        to enhance your investment strategy.
+                        {slides[currentSlide].subtitle}
                     </p>
                     <button className="cta-button">
                         Enquiry? Click here!
                     </button>
 
                     <div className="carousel-indicators">
-                        <span className="indicator active"></span>
-                        <span className="indicator"></span>
-                        <span className="indicator"></span>
+                        {slides.map((_, idx) => (
+                            <span
+                                key={idx}
+                                className={`indicator ${currentSlide === idx ? 'active' : ''}`}
+                                onClick={() => setCurrentSlide(idx)}
+                                style={{ cursor: 'pointer' }}
+                            ></span>
+                        ))}
                     </div>
                 </div>
             </section>
