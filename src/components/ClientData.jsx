@@ -58,7 +58,7 @@ const ClientData = () => {
       const { data, error } = await supabase
         .from('profiles')
         .select('id, username, role')
-        .neq('role', 'admin')
+        .neq('username', 'admin')
       if (error) throw error
       setAvailableUsers(data)
     } catch (error) {
