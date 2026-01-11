@@ -238,7 +238,7 @@ ${style}
     </div>
     <div class="receipt-header">
         <img src="/india-invest-karo-logo.png" alt="Logo" style="height: 80px; margin-bottom: 15px;" />
-        <h1>INDIA INVEST KARO</h1>
+        <!-- <h1>INDIA INVEST KARO</h1> -->
         <p class="tagline">Empowering Your Financial Growth</p>
         <div class="receipt-title-box"><h2>PAYMENT RECEIPT</h2></div>
     </div>
@@ -459,90 +459,7 @@ ${style}
                 </div>
             )}
 
-            {/* Printable Receipt Area rendered via Portal to Body (for reliable printing) */}
-            {printableReceiptData && createPortal(
-                <div id="printable-receipt" data-print-target="true" style={{ display: 'block', visibility: 'visible' }}>
-                    <div className="receipt-layout">
-                        {/* Watermark Logo */}
-                        <div className="receipt-watermark">
-                            <img src="/india-invest-karo-logo.png" alt="Watermark" />
-                        </div>
-                        <div className="receipt-header">
-                            <h1>INDIA INVEST KARO</h1>
-                            <p className="tagline">Empowering Your Financial Growth</p>
-                            <div className="receipt-title-box">
-                                <h2>PAYMENT RECEIPT</h2>
-                            </div>
-                        </div>
 
-                        <div className="receipt-body">
-                            <div className="receipt-grid">
-                                <div className="receipt-row">
-                                    <span className="receipt-label">Receipt Date:</span>
-                                    <span className="receipt-value">{printableReceiptData.receiptDate}</span>
-                                </div>
-                                <div className="receipt-row">
-                                    <span className="receipt-label">Client Name:</span>
-                                    <span className="receipt-value">{printableReceiptData.clientName}</span>
-                                </div>
-                                <div className="receipt-row">
-                                    <span className="receipt-label">Mobile Number:</span>
-                                    <span className="receipt-value">{printableReceiptData.clientMobile}</span>
-                                </div>
-                                <div className="receipt-row">
-                                    <span className="receipt-label">Payment Date:</span>
-                                    <span className="receipt-value">{printableReceiptData.paymentDate}</span>
-                                </div>
-                                <div className="receipt-row">
-                                    <span className="receipt-label">Service Segment:</span>
-                                    <span className="receipt-value">{printableReceiptData.segment}</span>
-                                </div>
-                                <div className="receipt-row">
-                                    <span className="receipt-label">Service Period:</span>
-                                    <span className="receipt-value">{printableReceiptData.servicePeriod}</span>
-                                </div>
-                                <div className="receipt-row">
-                                    <span className="receipt-label">Handled By:</span>
-                                    <span className="receipt-value">{printableReceiptData.agentName}</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <table className="receipt-table">
-                            <thead>
-                                <tr>
-                                    <th>Description / Particulars</th>
-                                    <th className="amount-right">Amount (INR)</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>
-                                        <strong>Consultancy Services</strong><br />
-                                        <small>Segment: {printableReceiptData.segment}</small>
-                                    </td>
-                                    <td className="amount-right">₹{printableReceiptData.grossAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                                </tr>
-                                <tr>
-                                    <td className="tax-label">Integrated GST (IGST) @ 18% (Included)</td>
-                                    <td className="amount-right">₹{printableReceiptData.gstAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                                </tr>
-                                <tr className="total-row">
-                                    <td>TOTAL NET AMOUNT RECEIVED</td>
-                                    <td className="amount-right">₹{printableReceiptData.totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-
-                        <div className="receipt-footer">
-                            <p className="thank-you">Thank you for choosing India Invest Karo!</p>
-                            <p className="computer-gen">This is a computer-generated receipt and does not require a physical signature.</p>
-                            <p className="website">www.indiainvestkaro.com</p>
-                        </div>
-                    </div>
-                </div>,
-                document.body
-            )}
         </div>
     )
 }
