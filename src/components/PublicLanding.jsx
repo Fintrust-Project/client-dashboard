@@ -94,7 +94,7 @@ const PublicLanding = () => {
             <header className="public-header">
                 <div className="logo-section">
                     <img src={logo} alt="India Invest Karo" className="logo-img" />
-                    <span className="company-name">India Invest Karo</span>
+                    {/* <span className="company-name">India Invest Karo</span> */}
                 </div>
 
                 <nav className="nav-links">
