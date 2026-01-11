@@ -69,9 +69,9 @@
 }
 
 .logo-img {
-    height: 180px;
-    margin-top: 10px;
-    margin-bottom: -40px;
+    height: 110px;
+    margin-top: 5px;
+    margin-bottom: -20px;
     position: relative;
     z-index: 1001;
 }
@@ -407,8 +407,8 @@
     }
 
     .logo-img {
-        height: 120px;
-        margin-bottom: -30px;
+        height: 72px;
+        margin-bottom: -15px;
     }
 
     .company-name {
