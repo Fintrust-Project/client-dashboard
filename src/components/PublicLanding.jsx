@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import TickerTape from './TickerTape'
 import '../css/PublicLanding.css'
 
-const logo = '/logo.png' // Move logo to public or handle import
+const logo = '/india-invest-karo-logo.png'
 
 const PublicLanding = () => {
     const router = useRouter();
