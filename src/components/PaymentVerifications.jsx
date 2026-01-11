@@ -212,6 +212,18 @@ const PaymentVerifications = () => {
             .thank-you { font-weight:700; font-size:1.1rem; color:#1e293b; margin-bottom:10px; }
             .computer-gen { font-size:0.8rem; color:#94a3b8; font-style:italic; }
             .website { font-weight:600; color:#3b82f6; margin-top:10px; }
+            .receipt-watermark {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%) rotate(-30deg);
+                opacity: 0.08;
+                width: 70%;
+                pointer-events: none;
+                z-index: 0;
+            }
+            .receipt-watermark img { width: 100%; height: auto; }
+            .receipt-layout { position: relative; overflow: hidden; }
         </style>`;
         const html = `<!DOCTYPE html>
 <html>
@@ -221,7 +233,11 @@ ${style}
 </head>
 <body>
 <div class="receipt-layout">
+    <div class="receipt-watermark">
+        <img src="/india-invest-karo-logo.png" alt="Watermark" />
+    </div>
     <div class="receipt-header">
+        <img src="/india-invest-karo-logo.png" alt="Logo" style="height: 80px; margin-bottom: 15px;" />
         <h1>INDIA INVEST KARO</h1>
         <p class="tagline">Empowering Your Financial Growth</p>
         <div class="receipt-title-box"><h2>PAYMENT RECEIPT</h2></div>
