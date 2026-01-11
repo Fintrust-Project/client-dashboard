@@ -36,7 +36,7 @@ const SidePanel = ({ activeView, setActiveView, isOpen, onToggle }) => {
   return (
     <div className={`side-panel ${isOpen ? 'show' : ''}`}>
       <div className="side-panel-header">
-        <h2>India Invest Karo</h2>
+        <img src="/india-invest-karo-logo.png" alt="India Invest Karo" style={{ width: '180px', height: 'auto' }} />
         <button className="side-panel-toggle" onClick={onToggle}>✕</button>
       </div>
       <nav className="side-panel-nav">
