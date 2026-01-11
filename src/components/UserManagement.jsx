@@ -46,7 +46,7 @@ const UserManagement = () => {
       const { data: profiles, error, count } = await supabase
         .from('profiles')
         .select('*', { count: 'exact' })
-        .neq('username', 'support@indiainvestkaro.com')
+        .neq('username', 'admin')
         .neq('status', 'deleted')
         .order('username', { ascending: true })
         .range(from, to)
