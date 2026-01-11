@@ -158,15 +158,14 @@ const PaymentVerifications = () => {
     }
 
     const handleGenerateReceipt = (e) => {
-        e.preventDefault()
+        e.preventDefault();
 
-        if (!selectedPayment) return
+        if (!selectedPayment) return;
 
-        const amount = parseFloat(selectedPayment.amount || 0)
-        const taxable = amount / 1.18
-        const gst = amount - taxable
+        const amount = parseFloat(selectedPayment.amount || 0);
+        const taxable = amount / 1.18;
+        const gst = amount - taxable;
 
-        // Explicitly map all required data for the receipt
         const dataToPrint = {
             receiptDate: format(new Date(), 'dd MMMM yyyy'),
             clientName: selectedPayment.clients?.name || 'N/A',
@@ -178,11 +177,92 @@ const PaymentVerifications = () => {
             grossAmount: taxable,
             gstAmount: gst,
             totalAmount: amount
-        }
+        };
 
-        setPrintableReceiptData(dataToPrint)
-        setShowReceiptModal(false)
-    }
+        openPrintWindow(dataToPrint);
+        setShowReceiptModal(false);
+    };
+
+    // Opens a new window with receipt HTML and triggers print
+    const openPrintWindow = (data) => {
+        const printWindow = window.open('', '_blank', 'width=800,height=600');
+        if (!printWindow) {
+            console.error('Failed to open print window');
+            return;
+        }
+        const style = `<style>
+            body { font-family: 'Inter', sans-serif; margin:0; padding:20px; background:#fff; color:#000; }
+            .receipt-layout { max-width:800px; margin:auto; border:2px solid #000; padding:40px; }
+            .receipt-header { text-align:center; border-bottom:2px solid #000; padding-bottom:20px; margin-bottom:30px; }
+            .receipt-header h1 { font-size:2.5rem; margin:0; }
+            .tagline { color:#64748b; font-style:italic; margin-top:5px; }
+            .receipt-title-box { margin-top:20px; background:#f1f5f9; padding:10px; }
+            .receipt-title-box h2 { margin:0; font-size:1.25rem; text-decoration:underline; }
+            .receipt-grid { display:grid; grid-template-columns:1fr 1fr; gap:15px; }
+            .receipt-row { display:flex; justify-content:space-between; padding:8px 15px; border-bottom:1px solid #f1f5f9; }
+            .receipt-label { font-weight:700; color:#475569; font-size:0.9rem; }
+            .receipt-value { color:#1e293b; font-weight:500; }
+            .receipt-table { width:100%; border-collapse:collapse; margin:30px 0; }
+            .receipt-table th { background:#1e293b; color:white; padding:12px; text-align:left; text-transform:uppercase; font-size:0.85rem; }
+            .receipt-table td { border:1px solid #e2e8f0; padding:15px; vertical-align:top; }
+            .amount-right { text-align:right; font-family:'Roboto Mono',monospace; font-weight:600; }
+            .tax-label { color:#64748b; font-size:0.85rem; }
+            .total-row { background:#f8fafc; font-weight:800; font-size:1.1rem; }
+            .receipt-footer { text-align:center; margin-top:50px; padding-top:20px; border-top:1px dashed #cbd5e1; }
+            .thank-you { font-weight:700; font-size:1.1rem; color:#1e293b; margin-bottom:10px; }
+            .computer-gen { font-size:0.8rem; color:#94a3b8; font-style:italic; }
+            .website { font-weight:600; color:#3b82f6; margin-top:10px; }
+        </style>`;
+        const html = `<!DOCTYPE html>
+<html>
+<head>
+<title>Payment Receipt</title>
+${style}
+</head>
+<body>
+<div class="receipt-layout">
+    <div class="receipt-header">
+        <h1>INDIA INVEST KARO</h1>
+        <p class="tagline">Empowering Your Financial Growth</p>
+        <div class="receipt-title-box"><h2>PAYMENT RECEIPT</h2></div>
+    </div>
+    <div class="receipt-body">
+        <div class="receipt-grid">
+            <div class="receipt-row"><span class="receipt-label">Receipt Date:</span><span class="receipt-value">${data.receiptDate}</span></div>
+            <div class="receipt-row"><span class="receipt-label">Client Name:</span><span class="receipt-value">${data.clientName}</span></div>
+            <div class="receipt-row"><span class="receipt-label">Mobile Number:</span><span class="receipt-value">${data.clientMobile}</span></div>
+            <div class="receipt-row"><span class="receipt-label">Payment Date:</span><span class="receipt-value">${data.paymentDate}</span></div>
+            <div class="receipt-row"><span class="receipt-label">Service Segment:</span><span class="receipt-value">${data.segment}</span></div>
+            <div class="receipt-row"><span class="receipt-label">Service Period:</span><span class="receipt-value">${data.servicePeriod}</span></div>
+            <div class="receipt-row"><span class="receipt-label">Handled By:</span><span class="receipt-value">${data.agentName}</span></div>
+        </div>
+    </div>
+    <table class="receipt-table">
+        <thead>
+            <tr><th>Description / Particulars</th><th class="amount-right">Amount (INR)</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>Consultancy Services</strong><br/><small>Segment: ${data.segment}</small></td><td class="amount-right">₹${data.grossAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td></tr>
+            <tr><td class="tax-label">Integrated GST (IGST) @ 18% (Included)</td><td class="amount-right">₹${data.gstAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td></tr>
+            <tr class="total-row"><td>TOTAL NET AMOUNT RECEIVED</td><td class="amount-right">₹${data.totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td></tr>
+        </tbody>
+    </table>
+    <div class="receipt-footer">
+        <p class="thank-you">Thank you for choosing India Invest Karo!</p>
+        <p class="computer-gen">This is a computer-generated receipt and does not require a physical signature.</p>
+        <p class="website">www.indiainvestkaro.com</p>
+    </div>
+</div>
+</body>
+</html>`;
+        printWindow.document.open();
+        printWindow.document.write(html);
+        printWindow.document.close();
+        setTimeout(() => {
+            printWindow.focus();
+            printWindow.print();
+        }, 500);
+    };
 
     return (
         <div className="verifications-container">
@@ -365,7 +445,7 @@ const PaymentVerifications = () => {
 
             {/* Printable Receipt Area rendered via Portal to Body (for reliable printing) */}
             {printableReceiptData && createPortal(
-                <div id="printable-receipt" data-print-target="true">
+                <div id="printable-receipt" data-print-target="true" style={{ display: 'block', visibility: 'visible' }}>
                     <div className="receipt-layout">
                         {/* Watermark Logo */}
                         <div className="receipt-watermark">
