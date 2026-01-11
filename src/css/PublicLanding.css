@@ -52,9 +52,10 @@
 /* Header */
 .public-header {
     background: #ffffff;
-    padding: 15px 5%;
+    padding: 10px 5%;
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
+    gap: 40px;
     align-items: center;
     position: sticky;
     top: 0;
@@ -71,7 +72,7 @@
 .logo-img {
     height: 110px;
     margin-top: 5px;
-    margin-bottom: -20px;
+    margin-bottom: -15px;
     position: relative;
     z-index: 1001;
 }
@@ -343,11 +344,12 @@
 /* Mobile Responsive (max-width: 768px) */
 @media (max-width: 768px) {
     .public-header {
-        padding: 20px 15px;
+        padding: 10px 15px;
         flex-direction: row;
         gap: 15px;
         overflow: visible;
         align-items: center;
+        justify-content: space-between;
     }
 
     .nav-links {
