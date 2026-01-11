@@ -271,6 +271,7 @@ const IncomeSlips = () => {
                                 <div key={slip.userId} className="slip-card official-slip">
                                     <div className="official-header">
                                         <div className="company-branding">
+                                            <img src="/india-invest-karo-logo.png" alt="India Invest Karo" style={{ height: '60px', marginBottom: '10px' }} />
                                             <h1>INDIA INVEST KARO</h1>
                                             <p>Empowering Your Financial Growth</p>
                                         </div>

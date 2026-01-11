@@ -369,7 +369,7 @@ const PaymentVerifications = () => {
                     <div className="receipt-layout">
                         {/* Watermark Logo */}
                         <div className="receipt-watermark">
-                            <img src={logo} alt="Watermark" />
+                            <img src="/india-invest-karo-logo.png" alt="Watermark" />
                         </div>
                         <div className="receipt-header">
                             <h1>INDIA INVEST KARO</h1>
