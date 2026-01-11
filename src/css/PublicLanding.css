@@ -69,7 +69,11 @@
 }
 
 .logo-img {
-    height: 60px;
+    height: 180px;
+    margin-top: 10px;
+    margin-bottom: -40px;
+    position: relative;
+    z-index: 1001;
 }
 
 .company-name {
@@ -339,9 +343,11 @@
 /* Mobile Responsive (max-width: 768px) */
 @media (max-width: 768px) {
     .public-header {
-        padding: 10px 15px;
-        flex-direction: column;
+        padding: 20px 15px;
+        flex-direction: row;
         gap: 15px;
+        overflow: visible;
+        align-items: center;
     }
 
     .nav-links {
@@ -401,7 +407,8 @@
     }
 
     .logo-img {
-        height: 45px;
+        height: 120px;
+        margin-bottom: -30px;
     }
 
     .company-name {
