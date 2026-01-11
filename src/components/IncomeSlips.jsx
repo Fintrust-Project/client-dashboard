@@ -203,7 +203,174 @@ const IncomeSlips = () => {
     }
 
     const handlePrint = () => {
-        window.print()
+        if (slipsData.length === 0) {
+            alert('No slip data available to print.')
+            return
+        }
+        openPrintWindow(slipsData)
+    }
+
+    const openPrintWindow = (data) => {
+        const printWindow = window.open('', '_blank', 'width=1000,height=800')
+        if (!printWindow) {
+            console.error('Failed to open print window')
+            return
+        }
+
+        const styles = `
+            <style>
+                body { font-family: 'Inter', sans-serif; margin: 0; background: #fff; color: #1e293b; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                .print-container { max-width: 900px; margin: 0 auto; padding: 20px; }
+                
+                .slip-card {
+                    border: 2px solid #1e293b;
+                    background: white;
+                    margin-bottom: 40px;
+                    page-break-after: always;
+                    position: relative;
+                }
+                .slip-card:last-child { page-break-after: auto; }
+
+                .official-header {
+                    display: flex;
+                    justify-content: space-between;
+                    padding: 20px;
+                    border-bottom: 2px solid #1e293b;
+                    background: #f8fafc;
+                }
+                .company-branding h1 { font-size: 1.8rem; margin: 0; color: #1e293b; letter-spacing: 1px; }
+                .company-branding p { color: #64748b; margin: 4px 0 0 0; font-style: italic; font-size: 0.9rem; }
+                
+                .slip-meta { text-align: right; }
+                .slip-meta h3 { margin: 0 0 10px 0; color: #3b82f6; text-transform: uppercase; font-size: 1.1rem; }
+                .meta-row { margin-bottom: 4px; font-size: 0.95rem; }
+                .meta-row span { color: #64748b; margin-right: 8px; }
+                .meta-row strong { color: #1e293b; }
+
+                .slip-table-container { padding: 20px; }
+                .slip-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin-bottom: 20px; }
+                .slip-table th { text-align: left; padding: 10px; background: #1e293b; color: white; text-transform: uppercase; font-size: 0.8rem; }
+                .slip-table td { padding: 10px; border: 1px solid #e2e8f0; vertical-align: top; }
+                
+                .particulars-cell { display: flex; flex-direction: column; }
+                .client-name { font-weight: 600; font-size: 0.95rem; }
+                .details { font-size: 0.8rem; color: #64748b; margin-top: 2px; }
+                
+                .amount-col { text-align: right; font-family: 'Courier New', monospace; font-weight: 600; width: 140px; }
+                .amount-cell { text-align: right; font-family: 'Courier New', monospace; font-weight: 700; font-size: 1rem; }
+                
+                .label-cell { text-align: right; font-weight: 600; color: #475569; background: #f8fafc; }
+                
+                .gst-row .amount-cell { color: #ef4444; }
+                .net-pay-row .amount-cell { background: #f0fdf4; color: #15803d; font-size: 1.1rem; border-top: 2px solid #15803d; }
+                
+                .slip-footer-disclaimer { text-align: center; margin-top: 30px; border-top: 1px dashed #cbd5e1; padding-top: 10px; }
+                .slip-footer-disclaimer p { margin: 4px 0; color: #94a3b8; font-size: 0.75rem; font-style: italic; }
+            </style>
+        `
+
+        // Generate HTML for each slip
+        const slipsHtml = data.map(slip => {
+            const gstAmount = slip.totalAmount * 0.18
+            const netPayable = slip.totalAmount - gstAmount
+
+            const recordsRows = slip.records.map(r => `
+                <tr>
+                    <td>${format(new Date(r.date), 'dd-MM-yyyy')}</td>
+                    <td>
+                        <div class="particulars-cell">
+                            <span class="client-name">${r.clientName}</span>
+                            <span class="details">Mobile: ${r.clientMobile} | Acc: ${r.account}</span>
+                        </div>
+                    </td>
+                    <td class="amount-col">${r.fullAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                    <td class="amount-col">
+                        ${r.hasSplit && r.splitPercentage < 100
+                    ? `<div style="font-size:0.8em; color:#3b82f6;">${r.splitPercentage.toFixed(1)}%</div>
+                               <div>${r.actualAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</div>`
+                    : `<div>${r.actualAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</div>`
+                }
+                    </td>
+                </tr>
+            `).join('')
+
+            return `
+                <div class="slip-card">
+                    <div class="official-header">
+                        <div class="company-branding">
+                            <img src="/india-invest-karo-logo.png" alt="Logo" style="height: 60px; margin-bottom: 10px;" />
+                            <h1>INDIA INVEST KARO</h1>
+                            <p>Empowering Your Financial Growth</p>
+                        </div>
+                        <div class="slip-meta">
+                            <h3>SALARY / INCOME SLIP</h3>
+                            <div class="meta-row"><span>Month:</span><strong>${format(parseISO(selectedMonth + '-01'), 'MMMM yyyy')}</strong></div>
+                            <div class="meta-row"><span>Agent Name:</span><strong>${slip.userName}</strong></div>
+                            <div class="meta-row"><span>Role:</span><strong style="text-transform: capitalize;">${slip.userRole}</strong></div>
+                        </div>
+                    </div>
+
+                    <div class="slip-table-container">
+                        <table class="slip-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Particulars (Client / Mobile / Account)</th>
+                                    <th class="amount-col">Full Amount</th>
+                                    <th class="amount-col">Your Share</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${recordsRows}
+                            </tbody>
+                            <tfoot>
+                                <tr class="summary-row">
+                                    <td colspan="3" class="label-cell">Total Gross Sales / Collection</td>
+                                    <td class="amount-cell">₹${slip.totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                                </tr>
+                                <tr class="summary-row gst-row">
+                                    <td colspan="3" class="label-cell">Less: GST @ 18%</td>
+                                    <td class="amount-cell">- ₹${gstAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                                </tr>
+                                <tr class="summary-row net-pay-row">
+                                    <td colspan="3" class="label-cell">NET PAYABLE INCOME</td>
+                                    <td class="amount-cell">₹${netPayable.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+
+                        <div class="slip-footer-disclaimer">
+                            <p>* This is an electronically generated document. No signature is required.</p>
+                            <p>* All payments are subject to standard verification protocols.</p>
+                        </div>
+                    </div>
+                </div>
+            `
+        }).join('')
+
+        const fullHtml = `
+            <!DOCTYPE html>
+            <html>
+                <head>
+                    <title>Income Slips Print</title>
+                    ${styles}
+                </head>
+                <body>
+                    <div class="print-container">
+                        ${slipsHtml}
+                    </div>
+                </body>
+            </html>
+        `
+
+        printWindow.document.open()
+        printWindow.document.write(fullHtml)
+        printWindow.document.close()
+
+        setTimeout(() => {
+            printWindow.focus()
+            printWindow.print()
+        }, 800)
     }
 
     if (user?.role === 'user') {
