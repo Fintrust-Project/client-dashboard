@@ -37,22 +37,6 @@ export async function loginUser(
   email: string,
   password: string
 ): Promise<{ result: AuthResult; user?: AuthUser }> {
-  // ── Test mode: check profiles table directly ──
-  const { data: profile, error: profileError } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('email', email)
-    .single()
-
-  if (!profileError && profile) {
-    if (profile.password === password) {
-      if (profile.status === 'deleted') {
-        return { result: { success: false, message: 'This account has been deactivated.' } }
-      }
-      return { result: { success: true }, user: profile as AuthUser }
-    }
-  }
-
   // ── Real Supabase Auth ──
   const { data, error } = await supabase.auth.signInWithPassword({ email, password })
 
@@ -93,34 +77,46 @@ export async function logoutUser(): Promise<void> {
 // ─── Signup ───────────────────────────────────────────────────────────────────
 
 /**
- * Initiate signup flow.
- * Currently runs in test mode — skips real OTP.
+ * Initiate signup flow using Supabase Auth.
  */
 export async function initiateSignup(payload: SignupPayload): Promise<AuthResult> {
-  const { email } = payload
+  const { email, password, username, phone } = payload
 
-  // Check if user already exists
-  const { data: existingUser } = await supabase
-    .from('profiles')
-    .select('email')
-    .eq('email', email)
-    .single()
+  // Register in Supabase Auth
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: {
+        username,
+        phone: '+91' + phone,
+      },
+    },
+  })
 
-  if (existingUser) {
-    return { success: false, message: 'User with this email already exists' }
+  if (error) {
+    return { success: false, message: error.message }
   }
 
-  console.log('TEST MODE: Skipping real OTP. Use any 6-digit code for verification.')
-  console.log('Test OTP: 123456')
+  // If email confirmation is disabled, a session is returned immediately.
+  // We can create the profile right away.
+  if (data.user && data.session) {
+    const newUser = {
+      id: data.user.id,
+      username,
+      role: 'user',
+      status: 'active',
+    }
+    await supabase.from('profiles').insert(newUser)
+  }
 
-  return { success: true, testMode: true }
+  return { success: true }
 }
 
 // ─── OTP Verification ─────────────────────────────────────────────────────────
 
 /**
  * Verify the OTP and create a user profile in the database.
- * Currently demo/test mode — does not validate real OTP.
  */
 export async function verifyOtpAndCreateUser(
   otp: string,
@@ -131,26 +127,44 @@ export async function verifyOtpAndCreateUser(
     return { result: { success: false, message: 'Invalid OTP format' } }
   }
 
-  const newUser: Omit<UserProfile, 'id'> & { id: string } = {
-    id: signupData.email, // Using email as ID for test mode
+  // Verify the OTP via Supabase Auth
+  const { data, error } = await supabase.auth.verifyOtp({
     email: signupData.email,
+    token: otp,
+    type: 'signup',
+  })
+
+  if (error) {
+    // If verification fails but user is somehow already created in auth, check if they exist
+    return { result: { success: false, message: error.message } }
+  }
+
+  const userId = data.user?.id
+  if (!userId) {
+    return { result: { success: false, message: 'Failed to retrieve authenticated user ID' } }
+  }
+
+  const newUser = {
+    id: userId,
     username: signupData.username,
-    phone: '+91' + signupData.phone,
-    password, // NOTE: Not secure — only for test mode
-    role: 'user',
-    status: 'active',
+    role: 'user' as const,
+    status: 'active' as const,
   }
 
   const { error: profileError } = await supabase.from('profiles').insert(newUser)
 
   if (profileError) {
     console.error('Profile creation error:', profileError)
-    return { result: { success: false, message: 'Failed to create profile' } }
+    // If they already exist in profiles, we can ignore this error
+    const existing = await fetchUserProfile(userId)
+    if (!existing) {
+      return { result: { success: false, message: 'Failed to create profile' } }
+    }
   }
 
   return {
     result: { success: true },
-    user: newUser as AuthUser,
+    user: { ...data.user, ...newUser } as AuthUser,
   }
 }
 
@@ -168,3 +182,4 @@ export async function getCurrentSession(): Promise<AuthUser | null> {
   const profile = await fetchUserProfile(session.user.id)
   return { ...session.user, ...(profile || {}) } as AuthUser
 }
+
