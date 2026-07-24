@@ -58,6 +58,9 @@ const Login = () => {
         <div className="login-hint">
           <p>Please enter your registered email and password.</p>
         </div>
+        <div className="signup-link">
+          <p>Don't have an account? <button type="button" className="signup-button" onClick={() => router.push('/signup')}>Sign Up</button></p>
+        </div>
       </div>
     </div>
   )

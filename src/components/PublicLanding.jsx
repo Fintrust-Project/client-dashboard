@@ -105,6 +105,10 @@ const PublicLanding = () => {
                     <a href="#" className="nav-item">Complaints</a>
                     <a href="#" className="nav-item">Contact Us</a>
                 </nav>
+
+                <div className="login-section">
+                    <Link href="/login" className="login-button">Login</Link>
+                </div>
             </header>
 
             {/* Hero Section */}

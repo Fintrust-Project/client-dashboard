@@ -66,6 +66,27 @@ export const AuthProvider = ({ children }) => {
   }
 
   const login = async (email, password) => {
+    // TEST MODE: Check profiles table directly for test users
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('email', email)
+      .single()
+
+    if (!profileError && profile) {
+      // Test mode: Check password from profiles table
+      if (profile.password === password) {
+        if (profile.status === 'deleted') {
+          return { success: false, message: 'This account has been deactivated.' }
+        }
+
+        setUser(profile)
+        localStorage.setItem('jwt_token', 'test_token_' + Date.now())
+        return { success: true }
+      }
+    }
+
+    // Try Supabase auth for real users
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -77,18 +98,23 @@ export const AuthProvider = ({ children }) => {
 
     if (data.user) {
       // Fetch profile to check if user is deleted
-      const { data: profile } = await supabase
+      const { data: userProfile } = await supabase
         .from('profiles')
         .select('status')
         .eq('id', data.user.id)
         .single()
 
-      if (profile?.status === 'deleted') {
+      if (userProfile?.status === 'deleted') {
         await supabase.auth.signOut()
         return { success: false, message: 'This account has been deactivated.' }
       }
 
       await fetchProfile(data.user)
+
+      // Store JWT token in localStorage (Supabase session includes JWT)
+      if (data.session) {
+        localStorage.setItem('jwt_token', data.session.access_token)
+      }
     }
 
     return { success: true }
@@ -96,6 +122,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     await supabase.auth.signOut()
+    localStorage.removeItem('jwt_token')
   }
 
   // Note: Creating a new user usually requires Admin API or manual sign up.
@@ -109,11 +136,87 @@ export const AuthProvider = ({ children }) => {
     return { success: false, message: "Please create users explicitly in Supabase Dashboard for this prototype." }
   }
 
+  const signup = async ({ email, phone, password, username }) => {
+    try {
+      // Check if user already exists
+      const { data: existingUser } = await supabase
+        .from('profiles')
+        .select('email')
+        .eq('email', email)
+        .single()
+
+      if (existingUser) {
+        return { success: false, message: 'User with this email already exists' }
+      }
+
+      // For testing: Skip Supabase auth and go directly to profile creation
+      // In production, use Supabase auth.signUp() and send real OTP
+      console.log('TEST MODE: Skipping real OTP. Use any 6-digit code for verification.')
+      console.log('Test OTP: 123456')
+
+      return { success: true, testMode: true }
+    } catch (error) {
+      console.error('Signup error:', error)
+      return { success: false, message: 'Signup failed. Please try again.' }
+    }
+  }
+
+  const verifyOTP = async (otp, signupData) => {
+    try {
+      // In a real implementation, verify the OTP from email/SMS
+      // For demo purposes, we'll accept any 6-digit OTP
+      if (otp.length !== 6) {
+        return { success: false, message: 'Invalid OTP format' }
+      }
+
+      // TEST MODE: Create user directly in profiles table without Supabase auth
+      const password = localStorage.getItem('temp_password')
+      
+      // Create profile entry
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert({
+          id: signupData.email, // Using email as ID for test mode
+          email: signupData.email,
+          username: signupData.username,
+          phone: '+91' + signupData.phone,
+          password: password, // Store password for test mode (NOT SECURE - only for testing)
+          role: 'user',
+          status: 'active'
+        })
+
+      if (profileError) {
+        console.error('Profile creation error:', profileError)
+        return { success: false, message: 'Failed to create profile' }
+      }
+
+      // Set user directly for test mode (bypassing Supabase auth)
+      setUser({
+        id: signupData.email,
+        email: signupData.email,
+        username: signupData.username,
+        phone: '+91' + signupData.phone,
+        role: 'user',
+        status: 'active'
+      })
+
+      // Store JWT token (mock token for test mode)
+      localStorage.setItem('jwt_token', 'test_token_' + Date.now())
+
+      return { success: true }
+    } catch (error) {
+      console.error('OTP verification error:', error)
+      return { success: false, message: 'OTP verification failed' }
+    }
+  }
+
   const value = {
     user,
     loading,
     login,
     logout,
+    signup,
+    verifyOTP,
     addUser
   }
 

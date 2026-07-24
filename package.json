@@ -6,6 +6,7 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.89.0",
     "date-fns": "^2.30.0",
+    "jsonwebtoken": "^9.0.3",
     "next": "^16.1.1",
     "papaparse": "^5.4.1",
     "react": "^19.2.3",

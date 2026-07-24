@@ -1,87 +1,97 @@
 'use client'
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '../context/AuthContext'
-import SidePanel from './SidePanel'
-import IncomeChart from './IncomeChart'
-import ClientData from './ClientData'
-import Profile from './Profile'
-import Attendance from './Attendance'
-import UserManagement from './UserManagement'
-import TeamManagement from './TeamManagement'
-import PaymentVerifications from './PaymentVerifications'
-import StrategyManager from './StrategyManager'
-import StrategyBanner from './StrategyBanner'
-import IncomeSlips from './IncomeSlips'
-import TickerTape from './TickerTape'
 import '../css/Dashboard.css'
 
 const Dashboard = () => {
-  const { user } = useAuth()
-  const [activeView, setActiveView] = useState('dashboard')
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const { user, logout } = useAuth()
+  const router = useRouter()
 
-  useEffect(() => {
-    setSidebarOpen(window.innerWidth > 768)
-  }, [])
-
-  const renderContent = () => {
-    switch (activeView) {
-      case 'dashboard':
-        return <IncomeChart />
-      case 'clients':
-        return <ClientData />
-      case 'profile':
-        return <Profile />
-      case 'attendance':
-        return <Attendance />
-      case 'team':
-        return user?.role === 'manager' ? <TeamManagement /> : null
-      case 'strategies':
-        return (user?.role === 'admin' || user?.role === 'manager') ? <StrategyManager /> : null
-      case 'users':
-        return user?.role === 'admin' ? <UserManagement /> : null
-      case 'verifications':
-        return user?.role === 'admin' ? <PaymentVerifications /> : null
-      case 'slips':
-        return (user?.role === 'admin' || user?.role === 'manager') ? <IncomeSlips /> : null
-      default:
-        return <IncomeChart />
+  const courses = [
+    {
+      id: 1,
+      title: 'NISM-Series-XXV-A: Persons Associated with Research Services',
+      description: 'Sales and Other Non-Core Services Certification Examination',
+      category: 'Research Services',
+      duration: '2 hours',
+      questions: 25,
+      image: '📊'
+    },
+    {
+      id: 2,
+      title: 'NISM-Series-V-A: Mutual Fund Distributors',
+      description: 'Certification Examination for Mutual Fund Distributors',
+      category: 'Mutual Funds',
+      duration: '2 hours',
+      questions: 50,
+      image: '💰'
+    },
+    {
+      id: 3,
+      title: 'NISM-Series-VIII: Equity Derivatives',
+      description: 'Certification Examination for Equity Derivatives',
+      category: 'Derivatives',
+      duration: '2 hours',
+      questions: 60,
+      image: '📈'
+    },
+    {
+      id: 4,
+      title: 'NISM-Series-I: Currency Derivatives',
+      description: 'Certification Examination for Currency Derivatives',
+      category: 'Derivatives',
+      duration: '2 hours',
+      questions: 50,
+      image: '💱'
     }
+  ]
+
+  const handleStartPractice = (courseId) => {
+    router.push(`/practice-test/${courseId}`)
+  }
+
+  const handleLogout = async () => {
+    await logout()
+    router.push('/')
   }
 
   return (
-    <div className={`dashboard ${sidebarOpen ? 'sidebar-open' : 'sidebar-collapsed'}`}>
-      {!sidebarOpen && (
-        <button className="sidebar-toggle-btn" onClick={() => setSidebarOpen(true)}>
-          ☰
+    <div className="dashboard-container">
+      <header className="dashboard-header">
+        <div className="header-left">
+          <h1>Welcome, {user?.email || 'User'}</h1>
+          <p>Select a course to start practicing</p>
+        </div>
+        <button className="logout-button" onClick={handleLogout}>
+          Logout
         </button>
-      )}
+      </header>
 
-      {/* Sidebar Overlay */}
-      <div
-        className={`sidebar-overlay ${sidebarOpen ? 'visible' : ''}`}
-        onClick={() => setSidebarOpen(false)}
-      ></div>
-
-      <SidePanel
-        activeView={activeView}
-        setActiveView={(view) => {
-          setActiveView(view);
-          if (window.innerWidth <= 768) setSidebarOpen(false);
-        }}
-        isOpen={sidebarOpen}
-        onToggle={() => setSidebarOpen(!sidebarOpen)}
-      />
-
-      <div className="dashboard-content">
-        <TickerTape />
-        <header className="dashboard-header">
-          <StrategyBanner />
-        </header>
-        <main className="dashboard-main">
-          {renderContent()}
-        </main>
-      </div>
+      <main className="dashboard-main">
+        <div className="courses-grid">
+          {courses.map((course) => (
+            <div key={course.id} className="course-card">
+              <div className="course-image">{course.image}</div>
+              <div className="course-content">
+                <span className="course-category">{course.category}</span>
+                <h3 className="course-title">{course.title}</h3>
+                <p className="course-description">{course.description}</p>
+                <div className="course-meta">
+                  <span className="meta-item">⏱ {course.duration}</span>
+                  <span className="meta-item">📝 {course.questions} Questions</span>
+                </div>
+                <button
+                  className="start-practice-button"
+                  onClick={() => handleStartPractice(course.id)}
+                >
+                  Start Practice Test
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </main>
     </div>
   )
 }
