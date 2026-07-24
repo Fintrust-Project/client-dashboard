@@ -53,12 +53,22 @@ const DashboardView = () => {
           </h1>
           <p className="text-sm text-slate-400">Explore courses and prepare for your certifications</p>
         </div>
-        <button
-          onClick={handleLogout}
-          className="self-center rounded-lg bg-red-500 px-6 py-3 font-semibold text-white shadow-md shadow-red-500/20 transition hover:-translate-y-0.5 hover:bg-red-600 hover:shadow-lg hover:shadow-red-500/30 sm:self-auto"
-        >
-          Logout
-        </button>
+        <div className="flex justify-center gap-3 sm:justify-end">
+          {user?.role === 'ADMIN' && (
+            <button
+              onClick={() => router.push('/admin/enquiries')}
+              className="rounded-lg border border-slate-600 px-6 py-3 font-semibold text-slate-200 transition hover:bg-white/10"
+            >
+              Enquiries
+            </button>
+          )}
+          <button
+            onClick={handleLogout}
+            className="rounded-lg bg-red-500 px-6 py-3 font-semibold text-white shadow-md shadow-red-500/20 transition hover:-translate-y-0.5 hover:bg-red-600 hover:shadow-lg hover:shadow-red-500/30"
+          >
+            Logout
+          </button>
+        </div>
       </header>
 
       <main className="mx-auto max-w-[1400px] p-4 sm:p-8">

@@ -212,3 +212,14 @@ export async function getCurrentSession(): Promise<AuthUser | null> {
   return { ...user, ...(profile || {}) } as AuthUser
 }
 
+/**
+ * Server-side guard for admin-only API routes. Returns the session user if
+ * they're logged in and have the ADMIN role, otherwise null — callers should
+ * respond 401 (no session) or 403 (logged in but not admin) accordingly.
+ */
+export async function requireAdmin(): Promise<AuthUser | null> {
+  const user = await getCurrentSession()
+  if (!user || user.role !== Role.ADMIN) return null
+  return user
+}
+
