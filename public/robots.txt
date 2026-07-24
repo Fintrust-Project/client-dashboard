@@ -2,5 +2,10 @@ User-agent: *
 Allow: /
 Disallow: /dashboard
 Disallow: /login
+Disallow: /signup
+Disallow: /verify-otp
+Disallow: /practice-test
+Disallow: /admin
+Disallow: /api
 
 Sitemap: https://www.indiainvestkaro.com/sitemap.xml

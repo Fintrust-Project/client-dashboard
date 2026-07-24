@@ -33,8 +33,8 @@ const SLIDES: Slide[] = [
     title: <>Trusted Research <br /> Driven Analysis.</>,
     subtitle: (
       <>
-        Get comprehensive market insights and research-backed data to <br /> make informed decisions
-        in the ever-evolving stock market.
+        Get comprehensive share market insights, market news, and research-backed data to <br />{' '}
+        make informed decisions in the ever-evolving stock market.
       </>
     ),
   },
@@ -313,10 +313,11 @@ const PublicLanding = () => {
             Education-first investing, built for everyday Indians
           </h2>
           <p className="max-w-[720px] text-base leading-relaxed text-slate-600">
-            India Invest Karo brings together market education, certification prep, and practical
-            support to help you navigate your financial journey with clarity. From preparing for
-            NISM certification exams to understanding mutual funds, insurance, and demat accounts,
-            we focus on helping you learn and decide for yourself — not on making decisions for you.
+            India Invest Karo (IndiaInvestKaro) brings together share market education, AI-assisted
+            market research, market news, certification prep, and practical support to help you
+            navigate your financial journey with clarity. From preparing for NISM certification
+            exams to understanding mutual funds, insurance, and demat accounts, we focus on helping
+            you learn and decide for yourself — not on making decisions for you.
           </p>
         </div>
       </section>
