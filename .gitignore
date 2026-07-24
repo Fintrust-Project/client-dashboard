@@ -7,3 +7,14 @@ node_modules/
 .env*
 *.log
 .DS_Store
+
+/src/generated/prisma
+
+# AI assistant / agent tooling (skills, configs) — local only
+.claude/
+.agents/
+.windsurf/
+skills-lock.json
+
+# Markdown docs (local reference only, e.g. ARCHITECTURE.md)
+*.md

@@ -1,13 +1,6 @@
 'use client'
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
-import {
-  loginUser,
-  logoutUser,
-  initiateSignup,
-  verifyOtpAndCreateUser,
-  fetchUserProfile,
-} from '@/services/auth.service'
 import type { AuthUser, AuthResult, SignupPayload } from '@/types'
 
 // ─── Context shape ────────────────────────────────────────────────────────────
@@ -19,6 +12,7 @@ interface AuthContextType {
   logout: () => Promise<void>
   signup: (payload: SignupPayload) => Promise<AuthResult>
   verifyOTP: (otp: string, signupData: Omit<SignupPayload, 'password'>) => Promise<AuthResult>
+  resendOTP: (email: string) => Promise<AuthResult>
   addUser: (email: string, password: string, role?: string, managerId?: string) => Promise<AuthResult>
 }
 
@@ -36,75 +30,76 @@ export const useAuth = (): AuthContextType => {
 
 // ─── Provider ─────────────────────────────────────────────────────────────────
 
+// Fetches the merged Supabase-auth + Prisma-profile user from the server.
+// Kept out of the component so it can be called both on mount and from the
+// auth-state-change listener without re-creating the closure each render.
+async function fetchSession(): Promise<AuthUser | null> {
+  const res = await fetch('/api/auth/session')
+  if (!res.ok) return null
+  const { user } = await res.json()
+  return user
+}
+
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<AuthUser | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     // Check active session on mount
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        fetchProfile(session.user.id, session.user as unknown as AuthUser)
-      } else {
-        setLoading(false)
-      }
+    fetchSession().then((sessionUser) => {
+      setUser(sessionUser)
+      setLoading(false)
     })
 
-    // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) {
-        fetchProfile(session.user.id, session.user as unknown as AuthUser)
-      } else {
+    // Listen for auth state changes. Only SIGNED_IN needs a server round trip
+    // (to merge in the Prisma profile for a newly-established session).
+    // TOKEN_REFRESHED fires silently in the background (every ~55 min) purely
+    // to rotate the JWT — the profile hasn't changed, so we keep the existing
+    // `user` as-is instead of re-hitting /api/auth/session. This is what keeps
+    // a long-running practice test from making background API/DB calls.
+    // SIGNED_OUT clears state locally without a fetch, since we already know
+    // the outcome.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event: string) => {
+      if (event === 'SIGNED_IN') {
+        fetchSession().then(setUser)
+      } else if (event === 'SIGNED_OUT') {
         setUser(null)
-        setLoading(false)
       }
+      // TOKEN_REFRESHED, USER_UPDATED, etc. intentionally ignored.
     })
 
     return () => subscription.unsubscribe()
   }, [])
 
-  const fetchProfile = async (userId: string, authUser: AuthUser) => {
-    try {
-      const profile = await fetchUserProfile(userId)
-
-      if (profile) {
-        if (profile.status === 'deleted') {
-          await supabase.auth.signOut()
-          setUser(null)
-          return
-        }
-        setUser({ ...authUser, ...profile })
-      } else {
-        setUser(authUser)
-      }
-    } catch (error) {
-      console.error('Error fetching profile:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  // ── Actions (delegate to service layer) ──────────────────────────────────
+  // ── Actions (delegate to API routes, which call the service layer) ───────
 
   const login = async (email: string, password: string): Promise<AuthResult> => {
-    const { result, user: loggedInUser } = await loginUser(email, password)
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    })
+    const data = await res.json()
 
-    if (result.success && loggedInUser) {
-      setUser(loggedInUser)
-      localStorage.setItem('jwt_token', 'test_token_' + Date.now())
+    if (data.success && data.user) {
+      setUser(data.user)
     }
 
-    return result
+    return { success: data.success, message: data.message }
   }
 
   const logout = async (): Promise<void> => {
-    await logoutUser()
-    localStorage.removeItem('jwt_token')
+    await fetch('/api/auth/logout', { method: 'POST' })
     setUser(null)
   }
 
   const signup = async (payload: SignupPayload): Promise<AuthResult> => {
-    return initiateSignup(payload)
+    const res = await fetch('/api/auth/signup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+    return res.json()
   }
 
   const verifyOTP = async (
@@ -112,14 +107,27 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     signupData: Omit<SignupPayload, 'password'>
   ): Promise<AuthResult> => {
     const password = localStorage.getItem('temp_password') || ''
-    const { result, user: newUser } = await verifyOtpAndCreateUser(otp, signupData, password)
+    const res = await fetch('/api/auth/verify-otp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ otp, signupData, password }),
+    })
+    const { result, user: newUser } = await res.json()
 
     if (result.success && newUser) {
       setUser(newUser)
-      localStorage.setItem('jwt_token', 'test_token_' + Date.now())
     }
 
     return result
+  }
+
+  const resendOTP = async (email: string): Promise<AuthResult> => {
+    const res = await fetch('/api/auth/resend-otp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    })
+    return res.json()
   }
 
   const addUser = async (
@@ -138,6 +146,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     logout,
     signup,
     verifyOTP,
+    resendOTP,
     addUser,
   }
 

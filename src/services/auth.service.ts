@@ -1,11 +1,13 @@
 /**
  * auth.service.ts
  * Business logic layer for authentication.
- * All Supabase auth calls are centralised here.
- * Controllers (API routes) and Context call these functions.
+ * Server-only: uses the cookie-aware Supabase server client + Prisma.
+ * Only called from API routes (src/app/api/**), never imported by Client Components.
  */
 
-import { supabase } from '@/lib/supabase'
+import { createClient } from '@/utils/supabase/server'
+import { prisma } from '@/lib/prisma'
+import { Role, ProfileStatus } from '@/generated/prisma/enums'
 import type { AuthResult, AuthUser, SignupPayload, UserProfile } from '@/types'
 
 // ─── Profile helpers ──────────────────────────────────────────────────────────
@@ -15,28 +17,28 @@ import type { AuthResult, AuthUser, SignupPayload, UserProfile } from '@/types'
  * Returns null when the profile does not exist.
  */
 export async function fetchUserProfile(userId: string): Promise<UserProfile | null> {
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', userId)
-    .single()
-
-  if (error || !data) return null
-  return data as UserProfile
+  try {
+    const profile = await prisma.profile.findUnique({
+      where: { id: userId },
+    })
+    return profile as unknown as UserProfile | null
+  } catch (error) {
+    console.error('Error fetching user profile via Prisma:', error)
+    return null
+  }
 }
 
 // ─── Login ────────────────────────────────────────────────────────────────────
 
 /**
- * Authenticate a user.
- * Supports both:
- *   1. Test-mode users stored directly in the profiles table (password column).
- *   2. Real Supabase Auth users.
+ * Authenticate a user via Supabase Auth, then merge in their Prisma profile.
  */
 export async function loginUser(
   email: string,
   password: string
 ): Promise<{ result: AuthResult; user?: AuthUser }> {
+  const supabase = await createClient()
+
   // ── Real Supabase Auth ──
   const { data, error } = await supabase.auth.signInWithPassword({ email, password })
 
@@ -45,19 +47,14 @@ export async function loginUser(
   }
 
   if (data.user) {
-    const { data: userProfile } = await supabase
-      .from('profiles')
-      .select('status')
-      .eq('id', data.user.id)
-      .single()
+    const profile = await fetchUserProfile(data.user.id)
 
-    if (userProfile?.status === 'deleted') {
+    if (profile?.status === ProfileStatus.DELETED) {
       await supabase.auth.signOut()
       return { result: { success: false, message: 'This account has been deactivated.' } }
     }
 
-    const fullProfile = await fetchUserProfile(data.user.id)
-    const mergedUser: AuthUser = { ...data.user, ...(fullProfile || {}) } as AuthUser
+    const mergedUser: AuthUser = { ...data.user, ...(profile || {}) } as AuthUser
 
     return {
       result: { success: true },
@@ -71,6 +68,7 @@ export async function loginUser(
 // ─── Logout ───────────────────────────────────────────────────────────────────
 
 export async function logoutUser(): Promise<void> {
+  const supabase = await createClient()
   await supabase.auth.signOut()
 }
 
@@ -81,6 +79,7 @@ export async function logoutUser(): Promise<void> {
  */
 export async function initiateSignup(payload: SignupPayload): Promise<AuthResult> {
   const { email, password, username, phone } = payload
+  const supabase = await createClient()
 
   // Register in Supabase Auth
   const { data, error } = await supabase.auth.signUp({
@@ -104,10 +103,14 @@ export async function initiateSignup(payload: SignupPayload): Promise<AuthResult
     const newUser = {
       id: data.user.id,
       username,
-      role: 'user',
-      status: 'active',
+      role: Role.USER,
+      status: ProfileStatus.ACTIVE,
     }
-    await supabase.from('profiles').insert(newUser)
+    try {
+      await prisma.profile.create({ data: newUser })
+    } catch (e) {
+      console.error('Error creating profile via Prisma in signup:', e)
+    }
   }
 
   return { success: true }
@@ -123,9 +126,14 @@ export async function verifyOtpAndCreateUser(
   signupData: Omit<SignupPayload, 'password'>,
   password: string
 ): Promise<{ result: AuthResult; user?: AuthUser }> {
-  if (otp.length !== 6) {
+  // Don't hardcode a specific OTP length — Supabase's "Email OTP Length" setting
+  // is project-configurable (this project currently issues 8-digit codes), so
+  // just sanity-check it's a plausible numeric OTP before hitting the API.
+  if (!/^\d{6,10}$/.test(otp)) {
     return { result: { success: false, message: 'Invalid OTP format' } }
   }
+
+  const supabase = await createClient()
 
   // Verify the OTP via Supabase Auth
   const { data, error } = await supabase.auth.verifyOtp({
@@ -147,14 +155,14 @@ export async function verifyOtpAndCreateUser(
   const newUser = {
     id: userId,
     username: signupData.username,
-    role: 'user' as const,
-    status: 'active' as const,
+    role: Role.USER,
+    status: ProfileStatus.ACTIVE,
   }
 
-  const { error: profileError } = await supabase.from('profiles').insert(newUser)
-
-  if (profileError) {
-    console.error('Profile creation error:', profileError)
+  try {
+    await prisma.profile.create({ data: newUser })
+  } catch (profileError) {
+    console.error('Profile creation error via Prisma:', profileError)
     // If they already exist in profiles, we can ignore this error
     const existing = await fetchUserProfile(userId)
     if (!existing) {
@@ -168,18 +176,39 @@ export async function verifyOtpAndCreateUser(
   }
 }
 
+// ─── Resend OTP ───────────────────────────────────────────────────────────────
+
+/**
+ * Resend the signup confirmation OTP. Subject to Supabase's own per-user
+ * minimum-interval setting (Auth -> Emails -> SMTP Settings), so callers
+ * should surface `error.message` as-is — it already says how long to wait.
+ */
+export async function resendSignupOtp(email: string): Promise<AuthResult> {
+  const supabase = await createClient()
+  const { error } = await supabase.auth.resend({ type: 'signup', email })
+
+  if (error) {
+    return { success: false, message: error.message }
+  }
+
+  return { success: true }
+}
+
 // ─── Session ──────────────────────────────────────────────────────────────────
 
 /**
- * Get the current session and merge with the profile.
- * Called on app initialisation.
+ * Get the current authenticated user and merge with the profile.
+ * Called on app initialisation via GET /api/auth/session.
+ * Uses getUser() (not getSession()) since this runs server-side and must
+ * validate the JWT against the Supabase Auth server rather than trust the cookie.
  */
 export async function getCurrentSession(): Promise<AuthUser | null> {
-  const { data: { session } } = await supabase.auth.getSession()
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
 
-  if (!session?.user) return null
+  if (!user) return null
 
-  const profile = await fetchUserProfile(session.user.id)
-  return { ...session.user, ...(profile || {}) } as AuthUser
+  const profile = await fetchUserProfile(user.id)
+  return { ...user, ...(profile || {}) } as AuthUser
 }
 

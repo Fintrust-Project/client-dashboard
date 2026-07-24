@@ -10,7 +10,7 @@ const VerifyOTPView = () => {
   const [loading, setLoading] = useState(false)
   const [countdown, setCountdown] = useState(60)
   const [resendDisabled, setResendDisabled] = useState(true)
-  const { verifyOTP } = useAuth()
+  const { verifyOTP, resendOTP } = useAuth()
   const router = useRouter()
 
   useEffect(() => {
@@ -35,21 +35,30 @@ const VerifyOTPView = () => {
 
   const handleResendOTP = async () => {
     setLoading(true)
-    setTimeout(() => {
-      setLoading(false)
+    setError('')
+
+    const pendingSignup = JSON.parse(localStorage.getItem('pending_signup') || '{}')
+    const result = await resendOTP(pendingSignup.email)
+
+    setLoading(false)
+
+    if (result.success) {
       setCountdown(60)
       setResendDisabled(true)
       setError('OTP resent successfully!')
       setTimeout(() => setError(''), 3000)
-    }, 1000)
+    } else {
+      // Surface Supabase's own message as-is — e.g. "you can only request this after 42 seconds"
+      setError(result.message || 'Failed to resend OTP')
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
 
-    if (otp.length !== 6) {
-      setError('Please enter a valid 6-digit OTP')
+    if (otp.length < 6) {
+      setError('Please enter a valid OTP')
       return
     }
 
@@ -78,7 +87,7 @@ const VerifyOTPView = () => {
     <div className="verify-otp-container">
       <div className="verify-otp-box">
         <h1>Verify OTP</h1>
-        <p className="subtitle">Enter the 6-digit code sent to your email and phone</p>
+        <p className="subtitle">Enter the code sent to your email and phone</p>
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label htmlFor="otp">Enter OTP</label>
@@ -86,10 +95,10 @@ const VerifyOTPView = () => {
               type="text"
               id="otp"
               value={otp}
-              onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+              onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 10))}
               required
-              placeholder="123456"
-              maxLength={6}
+              placeholder="Enter code"
+              maxLength={10}
               className="otp-input"
             />
           </div>

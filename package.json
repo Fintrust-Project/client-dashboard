@@ -4,6 +4,8 @@
   "description": "CMS Website with Client Management System",
   "private": true,
   "dependencies": {
+    "@prisma/adapter-pg": "^7.9.0",
+    "@prisma/client": "^7.9.0",
     "@supabase/ssr": "^0.12.3",
     "@supabase/supabase-js": "^2.89.0",
     "@tailwindcss/postcss": "^4.3.3",
@@ -14,6 +16,7 @@
     "lucide-react": "^1.26.0",
     "next": "^16.1.1",
     "papaparse": "^5.4.1",
+    "pg": "^8.22.0",
     "postcss": "^8.5.22",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
@@ -33,6 +36,7 @@
     "@types/node": "^26.1.1",
     "@types/react": "^18.3.31",
     "@types/react-dom": "^18.3.7",
+    "prisma": "^7.9.0",
     "typescript": "^5.5.4"
   }
 }

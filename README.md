@@ -68,8 +68,17 @@ npm run dev
 
 ## Database Setup
 
-This project uses Supabase. Run the SQL script provided in the root directory **`FULL_DATABASE_SETUP.sql`** in your Supabase SQL Editor. 
-This single script sets up all required tables (`profiles`, `clients`, `engagements`, `payments`) and security policies matching the application code.
+The database schema is managed by Prisma (`prisma/schema.prisma`) and is provider-agnostic —
+any standard PostgreSQL connection string works (Supabase, Railway, etc.). Set `DATABASE_URL`
+in `.env` (see `.env.example`), then apply the schema:
+
+```bash
+npx prisma migrate deploy
+```
+
+Authentication (sign-up/sign-in/OTP) is handled separately via Supabase Auth
+(`NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY`), independent of which Postgres
+provider `DATABASE_URL` points to.
 
 ## Default Credentials
 

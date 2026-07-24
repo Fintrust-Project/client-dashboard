@@ -1,0 +1,55 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "cjs"
+}
+
+// RBAC roles. USER is a regular member, MANAGER can see/manage their team
+// (via Profile.manager_id), ADMIN has full access.
+enum Role {
+  ADMIN
+  MANAGER
+  USER
+}
+
+enum ProfileStatus {
+  ACTIVE
+  DELETED
+}
+
+model Profile {
+  id         String        @id @db.Uuid
+  username   String?       @unique
+  role       Role          @default(USER)
+  status     ProfileStatus @default(ACTIVE)
+  manager_id String?       @db.Uuid
+  manager    Profile?      @relation("ManagerTeam", fields: [manager_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  team       Profile[]     @relation("ManagerTeam")
+
+  @@map("profiles")
+}
+
+// PENDING: not yet contacted. CONTACTED: a representative has called them.
+// RESOLVED: the enquiry is closed out.
+enum EnquiryStatus {
+  PENDING
+  CONTACTED
+  RESOLVED
+}
+
+model Enquiry {
+  id         Int           @id @default(autoincrement())
+  name       String
+  email      String
+  mobile     String
+  message    String?
+  status     EnquiryStatus @default(PENDING)
+  created_at DateTime      @default(now())
+  updated_at DateTime      @updatedAt
+
+  @@map("enquiries")
+}

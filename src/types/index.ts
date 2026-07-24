@@ -1,13 +1,16 @@
 // ─── User & Auth ──────────────────────────────────────────────────────────────
 
+import type { Role, ProfileStatus } from '@/generated/prisma/enums'
+
+export type { Role, ProfileStatus }
+
 export interface UserProfile {
   id: string
   email: string
   username?: string
   phone?: string
-  role: 'admin' | 'manager' | 'user'
-  status: 'active' | 'deleted'
-  password?: string // Only used in test mode
+  role: Role
+  status: ProfileStatus
 }
 
 export interface AuthUser extends UserProfile {
