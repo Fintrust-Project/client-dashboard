@@ -1,17 +1,17 @@
 'use client'
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '../context/AuthContext'
-import '../css/Login.css'
+import { useAuth } from '@/context/AuthContext'
+import '@/css/Login.css'
 
-const Login = () => {
+const LoginView = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const { login } = useAuth()
   const router = useRouter()
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
 
@@ -59,12 +59,16 @@ const Login = () => {
           <p>Please enter your registered email and password.</p>
         </div>
         <div className="signup-link">
-          <p>Don't have an account? <button type="button" className="signup-button" onClick={() => router.push('/signup')}>Sign Up</button></p>
+          <p>
+            Don&apos;t have an account?{' '}
+            <button type="button" className="signup-button" onClick={() => router.push('/signup')}>
+              Sign Up
+            </button>
+          </p>
         </div>
       </div>
     </div>
   )
 }
 
-export default Login
-
+export default LoginView

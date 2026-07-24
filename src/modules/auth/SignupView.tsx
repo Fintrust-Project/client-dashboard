@@ -1,10 +1,10 @@
 'use client'
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '../context/AuthContext'
-import '../css/Signup.css'
+import { useAuth } from '@/context/AuthContext'
+import '@/css/Signup.css'
 
-const Signup = () => {
+const SignupView = () => {
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
   const [password, setPassword] = useState('')
@@ -15,7 +15,7 @@ const Signup = () => {
   const { signup } = useAuth()
   const router = useRouter()
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
 
@@ -31,22 +31,12 @@ const Signup = () => {
 
     setLoading(true)
 
-    const result = await signup({
-      email,
-      phone,
-      password,
-      username
-    })
+    const result = await signup({ email, phone, password, username })
 
     setLoading(false)
 
     if (result.success) {
-      // Store signup data for OTP verification
-      localStorage.setItem('pending_signup', JSON.stringify({
-        email,
-        phone,
-        username
-      }))
+      localStorage.setItem('pending_signup', JSON.stringify({ email, phone, username }))
       localStorage.setItem('temp_password', password)
       router.push('/verify-otp')
     } else {
@@ -125,11 +115,20 @@ const Signup = () => {
           </button>
         </form>
         <div className="login-link">
-          <p>Already have an account? <button type="button" className="login-button-link" onClick={() => router.push('/login')}>Login</button></p>
+          <p>
+            Already have an account?{' '}
+            <button
+              type="button"
+              className="login-button-link"
+              onClick={() => router.push('/login')}
+            >
+              Login
+            </button>
+          </p>
         </div>
       </div>
     </div>
   )
 }
 
-export default Signup
+export default SignupView

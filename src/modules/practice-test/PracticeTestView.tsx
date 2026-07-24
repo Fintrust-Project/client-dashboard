@@ -1,51 +1,57 @@
 'use client'
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '../context/AuthContext'
-import '../css/PracticeTest.css'
+import type { Question, QuestionStatus } from '@/types'
+import '@/css/PracticeTest.css'
 
-const PracticeTest = () => {
-  const { user } = useAuth()
+// ─── Static question bank (to be moved to a service/API in the future) ────────
+const QUESTIONS: Question[] = [
+  {
+    id: 1,
+    question: 'Client interaction for Person Associated with Research Services should be:',
+    options: ['Predictive', 'Opinion-based', 'Advisory in nature', 'Factual and neutral'],
+    correct: 3,
+  },
+  {
+    id: 2,
+    question: 'Which of the following is NOT a responsibility of a Research Analyst?',
+    options: ['Maintain records', 'Disclose conflicts', 'Guarantee returns', 'Follow code of conduct'],
+    correct: 2,
+  },
+  {
+    id: 3,
+    question: 'Research Analyst should:',
+    options: ['Make price predictions', 'Provide investment advice', 'Offer factual analysis', 'Guarantee profits'],
+    correct: 2,
+  },
+  {
+    id: 4,
+    question: 'The minimum net worth requirement for a Research Analyst is:',
+    options: ['₹25 Lakhs', '₹50 Lakhs', '₹1 Crore', '₹5 Lakhs'],
+    correct: 0,
+  },
+  {
+    id: 5,
+    question: 'Research reports should be:',
+    options: ['Biased', 'Balanced and objective', 'Promotional', 'Exaggerated'],
+    correct: 1,
+  },
+]
+
+const EXAM_DURATION_SECONDS = 7190 // ~2 hours
+
+interface PracticeTestViewProps {
+  courseId?: string
+}
+
+const PracticeTestView = ({ courseId }: PracticeTestViewProps) => {
   const router = useRouter()
   const [currentQuestion, setCurrentQuestion] = useState(0)
-  const [selectedAnswer, setSelectedAnswer] = useState(null)
+  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null)
   const [markedForReview, setMarkedForReview] = useState(false)
-  const [answeredQuestions, setAnsweredQuestions] = useState(new Set())
-  const [reviewQuestions, setReviewQuestions] = useState(new Set())
-  const [timeLeft, setTimeLeft] = useState(7190) // 1:59:50 in seconds
-
-  const questions = [
-    {
-      id: 1,
-      question: 'Client interaction for Person Associated with Research Services should be:',
-      options: ['Predictive', 'Opinion-based', 'Advisory in nature', 'Factual and neutral'],
-      correct: 3
-    },
-    {
-      id: 2,
-      question: 'Which of the following is NOT a responsibility of a Research Analyst?',
-      options: ['Maintain records', 'Disclose conflicts', 'Guarantee returns', 'Follow code of conduct'],
-      correct: 2
-    },
-    {
-      id: 3,
-      question: 'Research Analyst should:',
-      options: ['Make price predictions', 'Provide investment advice', 'Offer factual analysis', 'Guarantee profits'],
-      correct: 2
-    },
-    {
-      id: 4,
-      question: 'The minimum net worth requirement for a Research Analyst is:',
-      options: ['₹25 Lakhs', '₹50 Lakhs', '₹1 Crore', '₹5 Lakhs'],
-      correct: 0
-    },
-    {
-      id: 5,
-      question: 'Research reports should be:',
-      options: ['Biased', 'Balanced and objective', 'Promotional', 'Exaggerated'],
-      correct: 1
-    }
-  ]
+  const [answeredQuestions, setAnsweredQuestions] = useState<Set<number>>(new Set())
+  const [reviewQuestions, setReviewQuestions] = useState<Set<number>>(new Set())
+  const [timeLeft, setTimeLeft] = useState(EXAM_DURATION_SECONDS)
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -60,43 +66,46 @@ const PracticeTest = () => {
     }, 1000)
 
     return () => clearInterval(timer)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const formatTime = (seconds) => {
+  const formatTime = (seconds: number): string => {
     const hrs = Math.floor(seconds / 3600)
     const mins = Math.floor((seconds % 3600) / 60)
     const secs = seconds % 60
     return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
   }
 
-  const handleAnswerSelect = (optionIndex) => {
+  const handleAnswerSelect = (optionIndex: number) => {
     setSelectedAnswer(optionIndex)
-    const newAnswered = new Set(answeredQuestions)
-    newAnswered.add(currentQuestion)
-    setAnsweredQuestions(newAnswered)
+    setAnsweredQuestions((prev) => new Set(prev).add(currentQuestion))
   }
 
   const handleMarkForReview = () => {
-    setMarkedForReview(!markedForReview)
-    const newReview = new Set(reviewQuestions)
-    if (!markedForReview) {
-      newReview.add(currentQuestion)
-    } else {
-      newReview.delete(currentQuestion)
-    }
-    setReviewQuestions(newReview)
+    setMarkedForReview((prev) => !prev)
+    setReviewQuestions((prev) => {
+      const next = new Set(prev)
+      if (!markedForReview) {
+        next.add(currentQuestion)
+      } else {
+        next.delete(currentQuestion)
+      }
+      return next
+    })
   }
 
   const handleClearAnswer = () => {
     setSelectedAnswer(null)
-    const newAnswered = new Set(answeredQuestions)
-    newAnswered.delete(currentQuestion)
-    setAnsweredQuestions(newAnswered)
+    setAnsweredQuestions((prev) => {
+      const next = new Set(prev)
+      next.delete(currentQuestion)
+      return next
+    })
   }
 
   const handleNext = () => {
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion(currentQuestion + 1)
+    if (currentQuestion < QUESTIONS.length - 1) {
+      setCurrentQuestion((prev) => prev + 1)
       setSelectedAnswer(null)
       setMarkedForReview(false)
     }
@@ -104,13 +113,13 @@ const PracticeTest = () => {
 
   const handlePrevious = () => {
     if (currentQuestion > 0) {
-      setCurrentQuestion(currentQuestion - 1)
+      setCurrentQuestion((prev) => prev - 1)
       setSelectedAnswer(null)
       setMarkedForReview(false)
     }
   }
 
-  const handleQuestionJump = (index) => {
+  const handleQuestionJump = (index: number) => {
     setCurrentQuestion(index)
     setSelectedAnswer(null)
     setMarkedForReview(reviewQuestions.has(index))
@@ -121,7 +130,7 @@ const PracticeTest = () => {
     router.push('/dashboard')
   }
 
-  const getQuestionStatus = (index) => {
+  const getQuestionStatus = (index: number): QuestionStatus => {
     if (index === currentQuestion) return 'selected'
     if (reviewQuestions.has(index)) return 'review'
     if (answeredQuestions.has(index)) return 'answered'
@@ -149,25 +158,22 @@ const PracticeTest = () => {
             <h3>Questions</h3>
           </div>
           <div className="status-legend">
-            <div className="legend-item">
-              <span className="legend-color selected"></span>
-              <span>Selected</span>
-            </div>
-            <div className="legend-item">
-              <span className="legend-color answered"></span>
-              <span>Answered</span>
-            </div>
-            <div className="legend-item">
-              <span className="legend-color review"></span>
-              <span>Mark For Review</span>
-            </div>
-            <div className="legend-item">
-              <span className="legend-color not-attempted"></span>
-              <span>Not Attempted</span>
-            </div>
+            {(
+              [
+                ['selected', 'Selected'],
+                ['answered', 'Answered'],
+                ['review', 'Mark For Review'],
+                ['not-attempted', 'Not Attempted'],
+              ] as [QuestionStatus, string][]
+            ).map(([status, label]) => (
+              <div key={status} className="legend-item">
+                <span className={`legend-color ${status}`}></span>
+                <span>{label}</span>
+              </div>
+            ))}
           </div>
           <div className="questions-grid">
-            {questions.map((_, index) => (
+            {QUESTIONS.map((_, index) => (
               <button
                 key={index}
                 className={`question-number ${getQuestionStatus(index)}`}
@@ -181,15 +187,17 @@ const PracticeTest = () => {
 
         <main className="question-panel">
           <div className="question-header">
-            <span className="question-counter">Q {currentQuestion + 1}/{questions.length}</span>
+            <span className="question-counter">
+              Q {currentQuestion + 1}/{QUESTIONS.length}
+            </span>
             <span className="question-marks">Mark: 1</span>
           </div>
 
           <div className="question-content">
-            <h2 className="question-text">{questions[currentQuestion].question}</h2>
+            <h2 className="question-text">{QUESTIONS[currentQuestion].question}</h2>
 
             <div className="options-container">
-              {questions[currentQuestion].options.map((option, index) => (
+              {QUESTIONS[currentQuestion].options.map((option, index) => (
                 <label key={index} className="option-label">
                   <input
                     type="radio"
@@ -225,7 +233,7 @@ const PracticeTest = () => {
               <button
                 className="nav-button next"
                 onClick={handleNext}
-                disabled={currentQuestion === questions.length - 1}
+                disabled={currentQuestion === QUESTIONS.length - 1}
               >
                 Next
               </button>
@@ -237,4 +245,4 @@ const PracticeTest = () => {
   )
 }
 
-export default PracticeTest
+export default PracticeTestView

@@ -1,10 +1,10 @@
 'use client'
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '../context/AuthContext'
-import '../css/VerifyOTP.css'
+import { useAuth } from '@/context/AuthContext'
+import '@/css/VerifyOTP.css'
 
-const VerifyOTP = () => {
+const VerifyOTPView = () => {
   const [otp, setOtp] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -19,7 +19,6 @@ const VerifyOTP = () => {
       router.push('/signup')
     }
 
-    // Countdown for resend
     const timer = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
@@ -35,12 +34,7 @@ const VerifyOTP = () => {
   }, [router])
 
   const handleResendOTP = async () => {
-    const pendingSignup = JSON.parse(localStorage.getItem('pending_signup'))
-    if (!pendingSignup) return
-
     setLoading(true)
-    // In a real implementation, this would call an API to resend OTP
-    // For now, we'll simulate it
     setTimeout(() => {
       setLoading(false)
       setCountdown(60)
@@ -50,7 +44,7 @@ const VerifyOTP = () => {
     }, 1000)
   }
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
 
@@ -61,7 +55,7 @@ const VerifyOTP = () => {
 
     setLoading(true)
 
-    const pendingSignup = JSON.parse(localStorage.getItem('pending_signup'))
+    const pendingSignup = JSON.parse(localStorage.getItem('pending_signup') || '{}')
     const result = await verifyOTP(otp, pendingSignup)
 
     setLoading(false)
@@ -105,7 +99,7 @@ const VerifyOTP = () => {
           </button>
         </form>
         <div className="resend-section">
-          <p>Didn't receive the code?</p>
+          <p>Didn&apos;t receive the code?</p>
           <button
             type="button"
             className="resend-button"
@@ -125,4 +119,4 @@ const VerifyOTP = () => {
   )
 }
 
-export default VerifyOTP
+export default VerifyOTPView

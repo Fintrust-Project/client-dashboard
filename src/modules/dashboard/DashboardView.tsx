@@ -1,53 +1,17 @@
 'use client'
-import React, { useState } from 'react'
+import React from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '../context/AuthContext'
-import '../css/Dashboard.css'
+import { useAuth } from '@/context/AuthContext'
+import { getAvailableCourses } from '@/services/dashboard.service'
+import type { Course } from '@/types'
+import '@/css/Dashboard.css'
 
-const Dashboard = () => {
+const DashboardView = () => {
   const { user, logout } = useAuth()
   const router = useRouter()
+  const courses: Course[] = getAvailableCourses()
 
-  const courses = [
-    {
-      id: 1,
-      title: 'NISM-Series-XXV-A: Persons Associated with Research Services',
-      description: 'Sales and Other Non-Core Services Certification Examination',
-      category: 'Research Services',
-      duration: '2 hours',
-      questions: 25,
-      image: '📊'
-    },
-    {
-      id: 2,
-      title: 'NISM-Series-V-A: Mutual Fund Distributors',
-      description: 'Certification Examination for Mutual Fund Distributors',
-      category: 'Mutual Funds',
-      duration: '2 hours',
-      questions: 50,
-      image: '💰'
-    },
-    {
-      id: 3,
-      title: 'NISM-Series-VIII: Equity Derivatives',
-      description: 'Certification Examination for Equity Derivatives',
-      category: 'Derivatives',
-      duration: '2 hours',
-      questions: 60,
-      image: '📈'
-    },
-    {
-      id: 4,
-      title: 'NISM-Series-I: Currency Derivatives',
-      description: 'Certification Examination for Currency Derivatives',
-      category: 'Derivatives',
-      duration: '2 hours',
-      questions: 50,
-      image: '💱'
-    }
-  ]
-
-  const handleStartPractice = (courseId) => {
+  const handleStartPractice = (courseId: number) => {
     router.push(`/practice-test/${courseId}`)
   }
 
@@ -96,4 +60,4 @@ const Dashboard = () => {
   )
 }
 
-export default Dashboard
+export default DashboardView
