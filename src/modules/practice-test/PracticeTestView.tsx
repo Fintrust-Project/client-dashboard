@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import type { Question, QuestionStatus } from '@/types'
 import '@/css/PracticeTest.css'
 
-// ─── Static question bank (to be moved to a service/API in the future) ────────
+// ─── Question Bank (25 questions to match the screenshot) ────────────────────
 const QUESTIONS: Question[] = [
   {
     id: 1,
@@ -36,9 +36,19 @@ const QUESTIONS: Question[] = [
     options: ['Biased', 'Balanced and objective', 'Promotional', 'Exaggerated'],
     correct: 1,
   },
+  // Pad the rest up to 25 questions so that the grid looks exactly like the screenshot
+  ...Array.from({ length: 20 }, (_, idx) => ({
+    id: idx + 6,
+    question: `NISM Series Practice Question ${idx + 6}: Which of the following best describes the regulatory guidelines for research analyst publications?`,
+    options: [
+      'They must be approved by SEBI before publication',
+      'They must contain clear disclaimers regarding potential conflicts of interest',
+      'They can only be distributed to institutional clients',
+      'They must guarantee minimum investment returns',
+    ],
+    correct: 1,
+  }))
 ]
-
-const EXAM_DURATION_SECONDS = 7190 // ~2 hours
 
 interface PracticeTestViewProps {
   courseId?: string
@@ -47,11 +57,11 @@ interface PracticeTestViewProps {
 const PracticeTestView = ({ courseId }: PracticeTestViewProps) => {
   const router = useRouter()
   const [currentQuestion, setCurrentQuestion] = useState(0)
-  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null)
-  const [markedForReview, setMarkedForReview] = useState(false)
-  const [answeredQuestions, setAnsweredQuestions] = useState<Set<number>>(new Set())
+  
+  // Track selected option per question ID: { [questionIndex]: optionIndex }
+  const [answers, setAnswers] = useState<Record<number, number>>({})
   const [reviewQuestions, setReviewQuestions] = useState<Set<number>>(new Set())
-  const [timeLeft, setTimeLeft] = useState(EXAM_DURATION_SECONDS)
+  const [timeLeft, setTimeLeft] = useState(7190) // 1:59:50 in seconds
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -77,15 +87,17 @@ const PracticeTestView = ({ courseId }: PracticeTestViewProps) => {
   }
 
   const handleAnswerSelect = (optionIndex: number) => {
-    setSelectedAnswer(optionIndex)
-    setAnsweredQuestions((prev) => new Set(prev).add(currentQuestion))
+    setAnswers((prev) => ({
+      ...prev,
+      [currentQuestion]: optionIndex,
+    }))
   }
 
-  const handleMarkForReview = () => {
-    setMarkedForReview((prev) => !prev)
+  const handleMarkForReviewChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const isChecked = e.target.checked
     setReviewQuestions((prev) => {
       const next = new Set(prev)
-      if (!markedForReview) {
+      if (isChecked) {
         next.add(currentQuestion)
       } else {
         next.delete(currentQuestion)
@@ -95,10 +107,9 @@ const PracticeTestView = ({ courseId }: PracticeTestViewProps) => {
   }
 
   const handleClearAnswer = () => {
-    setSelectedAnswer(null)
-    setAnsweredQuestions((prev) => {
-      const next = new Set(prev)
-      next.delete(currentQuestion)
+    setAnswers((prev) => {
+      const next = { ...prev }
+      delete next[currentQuestion]
       return next
     })
   }
@@ -106,23 +117,17 @@ const PracticeTestView = ({ courseId }: PracticeTestViewProps) => {
   const handleNext = () => {
     if (currentQuestion < QUESTIONS.length - 1) {
       setCurrentQuestion((prev) => prev + 1)
-      setSelectedAnswer(null)
-      setMarkedForReview(false)
     }
   }
 
   const handlePrevious = () => {
     if (currentQuestion > 0) {
       setCurrentQuestion((prev) => prev - 1)
-      setSelectedAnswer(null)
-      setMarkedForReview(false)
     }
   }
 
   const handleQuestionJump = (index: number) => {
     setCurrentQuestion(index)
-    setSelectedAnswer(null)
-    setMarkedForReview(reviewQuestions.has(index))
   }
 
   const handleEndExam = () => {
@@ -133,19 +138,25 @@ const PracticeTestView = ({ courseId }: PracticeTestViewProps) => {
   const getQuestionStatus = (index: number): QuestionStatus => {
     if (index === currentQuestion) return 'selected'
     if (reviewQuestions.has(index)) return 'review'
-    if (answeredQuestions.has(index)) return 'answered'
+    if (answers[index] !== undefined) return 'answered'
     return 'not-attempted'
   }
+
+  const currentSelectedOption = answers[currentQuestion]
+  const isMarkedForReview = reviewQuestions.has(currentQuestion)
 
   return (
     <div className="practice-test-container">
       <header className="test-header">
         <div className="header-left">
-          <h1>Practice Test NISM-Series-XXV-A: Persons Associated with Research Services</h1>
-          <p>Sales and Other Non-Core Services Certification Examination</p>
+          <h1>
+            Practice Test NISM-Series-XXV-A: Persons Associated with Research Services (Sales and Other Non-Core Services) Certification Examination: Practice Test NISM-...
+          </h1>
         </div>
         <div className="header-right">
-          <div className="timer">{formatTime(timeLeft)}</div>
+          <div className="timer">
+            ⏱ {formatTime(timeLeft)}
+          </div>
           <button className="end-exam-button" onClick={handleEndExam}>
             End Exam
           </button>
@@ -153,25 +164,31 @@ const PracticeTestView = ({ courseId }: PracticeTestViewProps) => {
       </header>
 
       <div className="test-content">
+        {/* Left column - Question Panel */}
         <aside className="questions-panel">
           <div className="panel-header">
             <h3>Questions</h3>
           </div>
+          
           <div className="status-legend">
-            {(
-              [
-                ['selected', 'Selected'],
-                ['answered', 'Answered'],
-                ['review', 'Mark For Review'],
-                ['not-attempted', 'Not Attempted'],
-              ] as [QuestionStatus, string][]
-            ).map(([status, label]) => (
-              <div key={status} className="legend-item">
-                <span className={`legend-color ${status}`}></span>
-                <span>{label}</span>
-              </div>
-            ))}
+            <div className="legend-item">
+              <span className="legend-color selected"></span>
+              <span>Selected</span>
+            </div>
+            <div className="legend-item">
+              <span className="legend-color answered"></span>
+              <span>Answered</span>
+            </div>
+            <div className="legend-item">
+              <span className="legend-color review"></span>
+              <span>Mark For Review</span>
+            </div>
+            <div className="legend-item">
+              <span className="legend-color not-attempted"></span>
+              <span>Not Attempted</span>
+            </div>
           </div>
+
           <div className="questions-grid">
             {QUESTIONS.map((_, index) => (
               <button
@@ -185,43 +202,60 @@ const PracticeTestView = ({ courseId }: PracticeTestViewProps) => {
           </div>
         </aside>
 
+        {/* Right column - Main Question Workspace */}
         <main className="question-panel">
-          <div className="question-header">
-            <span className="question-counter">
-              Q {currentQuestion + 1}/{QUESTIONS.length}
-            </span>
-            <span className="question-marks">Mark: 1</span>
-          </div>
+          <div className="question-card-wrapper">
+            <div className="question-header">
+              <div className="question-counter">
+                Q {currentQuestion + 1}/{QUESTIONS.length}
+              </div>
+              <div className="question-marks">
+                Mark: 1
+              </div>
+            </div>
 
-          <div className="question-content">
-            <h2 className="question-text">{QUESTIONS[currentQuestion].question}</h2>
+            <div className="question-content">
+              <h2 className="question-text">
+                {QUESTIONS[currentQuestion].question}
+              </h2>
 
-            <div className="options-container">
-              {QUESTIONS[currentQuestion].options.map((option, index) => (
-                <label key={index} className="option-label">
-                  <input
-                    type="radio"
-                    name="answer"
-                    value={index}
-                    checked={selectedAnswer === index}
-                    onChange={() => handleAnswerSelect(index)}
-                  />
-                  <span className="option-text">{option}</span>
-                </label>
-              ))}
+              <div className="options-container">
+                {QUESTIONS[currentQuestion].options.map((option, index) => (
+                  <label
+                    key={index}
+                    className={`option-label ${currentSelectedOption === index ? 'selected' : ''}`}
+                  >
+                    <input
+                      type="radio"
+                      name={`question-option-${currentQuestion}`}
+                      value={index}
+                      checked={currentSelectedOption === index}
+                      onChange={() => handleAnswerSelect(index)}
+                    />
+                    <span className="option-text">{option}</span>
+                  </label>
+                ))}
+              </div>
             </div>
           </div>
 
+          {/* Footer Controls matching the screenshot */}
           <div className="question-footer">
-            <button
-              className={`mark-review-button ${markedForReview ? 'marked' : ''}`}
-              onClick={handleMarkForReview}
-            >
-              {markedForReview ? '✓ Marked for Review' : 'Mark for Review'}
-            </button>
-            <button className="clear-answer-button" onClick={handleClearAnswer}>
-              CLEAR ANSWER
-            </button>
+            <div className="footer-left">
+              <label className="review-checkbox-wrapper">
+                <input
+                  type="checkbox"
+                  checked={isMarkedForReview}
+                  onChange={handleMarkForReviewChange}
+                />
+                <span>Mark for Review</span>
+              </label>
+
+              <button className="clear-answer-button" onClick={handleClearAnswer}>
+                CLEAR ANSWER
+              </button>
+            </div>
+
             <div className="navigation-buttons">
               <button
                 className="nav-button previous"
