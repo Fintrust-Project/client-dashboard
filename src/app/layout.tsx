@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import { AuthProvider } from '@/context/AuthContext'
 import './globals.css'
-import '../css/index.css'
 
 export const metadata: Metadata = {
   title: 'India Invest Karo - Client Dashboard',
