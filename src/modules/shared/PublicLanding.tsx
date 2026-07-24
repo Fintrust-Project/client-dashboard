@@ -8,6 +8,7 @@ import {
   ShieldCheck,
   Wallet,
   GraduationCap,
+  BrainCircuit,
   Mail,
   Phone,
   MapPin,
@@ -68,7 +69,13 @@ const SERVICES: ServiceItem[] = [
     icon: TrendingUp,
     title: 'Stock Suggestion',
     description:
-      'Research-backed market insights and stock ideas to help inform your own investment decisions. Provided for informational and educational purposes only.',
+      'Research-backed market insights and AI-assisted stock ideas to help inform your own investment decisions. Provided for informational and educational purposes only.',
+  },
+  {
+    icon: BrainCircuit,
+    title: 'AI-Powered Market Research',
+    description:
+      'We use Artificial Intelligence alongside human research to support in-depth market research, company valuation, and identifying potentially favorable entry and exit points. Data-driven, always reviewed — for informational and educational purposes only.',
   },
   {
     icon: PieChart,
@@ -98,6 +105,7 @@ const SERVICES: ServiceItem[] = [
 
 const WHY_CHOOSE_US = [
   'Education-first approach to investing and certification prep',
+  'AI-assisted research and valuation, reviewed by our team',
   'Practice tests modeled on real NISM exam patterns',
   'Transparent communication — no guaranteed-return claims',
   'Dedicated support for every query',

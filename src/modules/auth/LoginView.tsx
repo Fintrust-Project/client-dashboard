@@ -2,6 +2,7 @@
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
+import PasswordInput from './PasswordInput'
 
 const LoginView = () => {
   const [email, setEmail] = useState('')
@@ -47,14 +48,12 @@ const LoginView = () => {
             <label htmlFor="password" className="mb-2 block text-sm font-semibold text-slate-400">
               Password
             </label>
-            <input
-              type="password"
+            <PasswordInput
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
               placeholder="Enter password"
-              className="w-full rounded-xl border border-white/10 bg-slate-900/60 px-5 py-3.5 text-base text-white transition focus:border-blue-500 focus:bg-slate-900/80 focus:outline-none focus:ring-4 focus:ring-blue-500/15"
             />
           </div>
           {error && (
